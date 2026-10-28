@@ -69,7 +69,7 @@ export function DevPanel() {
           className="w-24 border px-2 py-1"
           style={{ borderColor: "var(--color-hairline)" }}
         />
-        <pre className="overflow-auto rounded bg-fill p-3 text-xs">{JSON.stringify(state, null, 2)}</pre>
+        <pre className="overflow-auto rounded bg-fill-weak p-3 text-xs">{JSON.stringify(state, null, 2)}</pre>
         <p className="text-label">connection: {connection}</p>
       </section>
 

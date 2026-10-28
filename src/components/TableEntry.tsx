@@ -31,11 +31,11 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
     >
       <div className="flex flex-1 flex-col justify-center gap-6">
         <div className="flex flex-col gap-2 text-left">
-          <h1 className="text-pretty font-serif-kr text-ink text-question-ko-solo">
+          <h1 className="text-pretty font-sans text-ink text-question-ko-solo">
             {mode === "en" ? tableEntry.title.en : tableEntry.title.ko}
           </h1>
           {mode === "both" && (
-            <p lang="en" className="font-serif-en text-ink-sub text-question-en-both px-1">
+            <p lang="en" className="font-sans text-ink-sub text-question-en-both px-1">
               {tableEntry.title.en}
             </p>
           )}

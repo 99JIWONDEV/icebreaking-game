@@ -30,11 +30,5 @@ export const cardCloseFlipTransition = {
   ease: "easeInOut",
 } as const;
 
-export const shineTransition = {
-  delay: 0.85,
-  duration: 0.9,
-  ease: "easeInOut",
-} as const;
-
 export const textRevealDelayMs = 900;
 export const textRevealStaggerMs = 90;

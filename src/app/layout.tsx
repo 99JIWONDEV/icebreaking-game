@@ -1,22 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Newsreader, Noto_Serif_KR } from "next/font/google";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 import { INTRO_CACHE_MS } from "@/lib/config";
 import "./globals.css";
-
-const notoSerifKr = Noto_Serif_KR({
-  variable: "--font-serif-kr-loaded",
-  subsets: ["latin"],
-  weight: ["500"],
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  variable: "--font-serif-en-loaded",
-  subsets: ["latin"],
-  weight: ["400"],
-  style: ["normal"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "EM · KM 아이스브레이킹",
@@ -25,7 +10,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   // <meta name="theme-color"> needs a literal value (can't reference a CSS custom property) — keep in sync with --color-canvas in globals.css
-  themeColor: "#f7f0e3",
+  themeColor: "#fafaf9",
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
@@ -37,15 +22,13 @@ const introSkipScript = `(function(){try{var r=localStorage.getItem('icebreaker:
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="ko"
-      className={`${notoSerifKr.variable} ${newsreader.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
+    <html lang="ko" className="h-full antialiased" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: introSkipScript }} />
       </head>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <ConvexClientProvider>{children}</ConvexClientProvider>
+      </body>
     </html>
   );
 }

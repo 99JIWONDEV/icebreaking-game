@@ -9,7 +9,6 @@ import { LiveAnnouncer } from "@/components/LiveAnnouncer";
 import { MenuDrawer } from "@/components/MenuDrawer";
 import { OpenCardOverlay } from "@/components/OpenCardOverlay";
 import { TopBar } from "@/components/TopBar";
-import { categoryColorVar } from "@/lib/categoryColors";
 import { DRAW_RANDOM_STEP_MS, DRAW_RANDOM_SUSPENSE_MS } from "@/lib/config";
 import { categoryExhausted, drawRandom as drawRandomCopy, menu, pick, progress, topBar } from "@/lib/i18n";
 import { categories, questionById, questionsInCategory, questions } from "@/lib/questions";
@@ -165,12 +164,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
         </div>
 
         <div className="flex flex-col gap-1 px-5 pb-4">
-          <h1 className="flex items-center gap-2 font-sans text-ink text-title">
-            {category !== "all" && (
-              <span aria-hidden className="size-2 rounded-full" style={{ background: categoryColorVar(category) }} />
-            )}
-            {pick(mode, currentCategoryLabel.ko, currentCategoryLabel.en)}
-          </h1>
+          <h1 className="font-sans text-ink text-title">{pick(mode, currentCategoryLabel.ko, currentCategoryLabel.en)}</h1>
           <p className="text-label text-ink-sub">
             {pick(mode, progress(currentCounts.used, currentCounts.total).ko, progress(currentCounts.used, currentCounts.total).en)}
           </p>

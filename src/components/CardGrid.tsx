@@ -38,7 +38,10 @@ export function CardGrid({
     <div
       key={category}
       className="grid"
-      style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap: "var(--size-grid-gap)" }}
+      style={{
+        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
+        gap: category === "all" ? "var(--size-grid-gap-all)" : "var(--size-grid-gap)",
+      }}
     >
       {questions.map((question, index) => {
         const used = usedIds.includes(question.id);
@@ -53,7 +56,7 @@ export function CardGrid({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: (index * stepMs) / 1000, duration: 0.3, ease: "easeOut" }}
             className="rounded-[var(--radius-track)] transition-[box-shadow] duration-150"
-            style={{ boxShadow: highlighted ? "0 0 0 2px var(--color-accent)" : "none" }}
+            style={{ boxShadow: highlighted ? "0 0 0 2px var(--color-ink)" : "none" }}
           >
             <CardBack
               question={question}

@@ -74,10 +74,10 @@ export function Splash({ onDone }: { onDone: () => void }) {
           ease: "easeOut",
         }}
       >
-        <span lang="ko" className="font-serif-kr text-intro-ko text-ink text-pretty">
+        <span lang="ko" className="font-sans text-intro-ko text-ink text-pretty">
           {intro.ko}
         </span>
-        <span lang="en" className="font-serif-en text-intro-en text-ink-sub">
+        <span lang="en" className="font-sans text-intro-en text-ink-sub">
           {intro.en}
         </span>
       </motion.span>

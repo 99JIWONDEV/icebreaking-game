@@ -15,8 +15,8 @@ const SIZE: Record<ButtonSize, { height: string; radius: string; paddingX: strin
 
 const VARIANT: Record<ButtonVariant, { background: string; color: string; border: string }> = {
   fill: { background: "var(--color-accent)", color: "var(--color-on-accent)", border: "none" },
-  weak: { background: "var(--color-accent-weak)", color: "var(--color-accent-ink)", border: "none" },
-  outline: { background: "transparent", color: "var(--color-ink)", border: "1px solid var(--color-outline-border)" },
+  weak: { background: "var(--color-fill-weak)", color: "var(--color-ink)", border: "none" },
+  outline: { background: "transparent", color: "var(--color-ink)", border: "1px solid var(--color-line-strong)" },
 };
 
 export function Button({

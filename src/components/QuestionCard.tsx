@@ -23,10 +23,10 @@ export function QuestionCard({
   const order = questionIndex(question);
   const solo = mode !== "both";
 
-  const koClass = `text-pretty font-serif-kr text-ink ${
+  const koClass = `text-pretty font-sans text-ink ${
     solo ? "text-question-ko-solo" : "text-question-ko-both"
   }`;
-  const enClass = `text-pretty font-serif-en ${
+  const enClass = `text-pretty font-sans ${
     solo ? "text-question-en-solo" : "text-question-en-both"
   }`;
 
@@ -45,7 +45,7 @@ export function QuestionCard({
         <span className="text-label text-ink-sub">
           {sourceLabel(mode, category)}
         </span>
-        <span className="text-label text-accent">
+        <span className="text-label text-ink-sub">
           {String(order).padStart(2, "0")} / {total}
         </span>
       </div>

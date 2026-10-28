@@ -6,13 +6,7 @@ import { CardBackFace } from "@/components/CardBackFace";
 import { CloseButtonRing } from "@/components/CloseButtonRing";
 import { QuestionCard } from "@/components/QuestionCard";
 import { MIN_OPEN_MS } from "@/lib/config";
-import {
-  cardCloseFlipTransition,
-  cardFlipTransition,
-  cardMoveSpring,
-  shineTransition,
-  textRevealDelayMs,
-} from "@/lib/motion";
+import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, textRevealDelayMs } from "@/lib/motion";
 import { questionIndex, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
@@ -135,19 +129,6 @@ export function OpenCardOverlay({
                 }}
               >
                 <QuestionCard question={question} revealed={textRevealed} />
-                {playIntro && (
-                  <motion.div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 w-1/3"
-                    style={{
-                      background:
-                        "linear-gradient(100deg, transparent, color-mix(in srgb, white 35%, transparent), transparent)",
-                    }}
-                    initial={{ left: "-40%" }}
-                    animate={{ left: "110%" }}
-                    transition={shineTransition}
-                  />
-                )}
               </div>
             </motion.div>
           </motion.div>

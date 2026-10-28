@@ -12,7 +12,7 @@ export function LanguageSegment() {
 
   return (
     <div
-      className="relative flex items-center gap-1 bg-fill p-1"
+      className="relative flex items-center gap-1 bg-fill-weak p-1"
       style={{ height: "var(--size-segment-track)", borderRadius: "var(--radius-btn-lg)" }}
     >
       {languageOptions.map((option) => {

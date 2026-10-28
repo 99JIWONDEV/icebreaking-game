@@ -1,28 +1,17 @@
-import { categoryColorVar } from "@/lib/categoryColors";
 import { questionIndex, type Question } from "@/lib/questions";
 
-/** Pure visual — the back-of-card look, reused by the grid tile button and the flip overlay. */
+/** Pure visual — the back-of-card look, reused by the grid tile button and the flip overlay.
+ *  Minimal system: paper + hairline border, the number is the only content. No category
+ *  color, no inner frame, no texture — used cards are told apart by a flat fill-weak tint. */
 export function CardBackFace({ question, used }: { question: Question; used: boolean }) {
   const number = questionIndex(question);
-  const catColor = categoryColorVar(question.category);
-  const background = used ? `color-mix(in srgb, ${catColor}, var(--color-canvas) 60%)` : catColor;
-  const borderColor = `color-mix(in srgb, ${catColor}, var(--color-ink) 28%)`;
-  const frameColor = `color-mix(in srgb, ${catColor}, var(--color-ink) 22%)`;
 
   return (
     <div
-      className="relative flex h-full w-full items-center justify-center"
-      style={{ borderRadius: "var(--radius-track)", background, border: `1px solid ${borderColor}` }}
+      className={`flex h-full w-full items-center justify-center ${used ? "bg-fill-weak" : "bg-paper"}`}
+      style={{ borderRadius: "var(--radius-track)", border: "1px solid var(--color-hairline)" }}
     >
-      <span
-        aria-hidden
-        className="absolute inset-[6px] rounded-[inherit]"
-        style={{ border: `1px solid ${frameColor}` }}
-      />
-      <span className="flex flex-col items-center gap-1.5">
-        <span className="font-serif-kr text-ink text-label">{String(number).padStart(2, "0")}</span>
-        {used && <span aria-hidden className="size-[5px] rounded-full bg-accent" />}
-      </span>
+      <span className="font-sans text-ink text-card-number">{String(number).padStart(2, "0")}</span>
     </div>
   );
 }
