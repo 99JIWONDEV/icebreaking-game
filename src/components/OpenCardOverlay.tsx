@@ -87,7 +87,7 @@ export function OpenCardOverlay({
       />
       <div
         className="fixed inset-0 z-50 flex flex-col items-center p-5"
-        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 20px)" }}
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}
       >
         <h2 id={titleId} ref={titleRef} tabIndex={-1} className="sr-only">
           카드 {number}번

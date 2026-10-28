@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/Button";
 import { MIN_OPEN_MS } from "@/lib/config";
 import { closeCard, pick } from "@/lib/i18n";
 import { useViewStore } from "@/store/useViewStore";
@@ -30,26 +31,22 @@ export function CloseButtonRing({
   }, [openedAt]);
 
   return (
-    <button
-      type="button"
-      disabled={!ready}
-      onClick={onClose}
-      className="relative flex w-full items-center justify-center gap-2 bg-paper text-btn text-ink"
-      style={{
-        height: "var(--size-cta)",
-        borderRadius: "var(--radius-cta)",
-        border: "1px solid var(--color-hairline)",
-        opacity: ready ? 1 : 0.6,
-      }}
-    >
+    <Button type="button" size="xl" variant="fill" display="full" disabled={!ready} onClick={onClose}>
       <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} aria-hidden className="-rotate-90">
-        <circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke="var(--color-hairline)" strokeWidth={STROKE} />
         <circle
           cx={SIZE / 2}
           cy={SIZE / 2}
           r={RADIUS}
           fill="none"
-          stroke="var(--color-ink)"
+          stroke="color-mix(in srgb, var(--color-on-accent) 35%, transparent)"
+          strokeWidth={STROKE}
+        />
+        <circle
+          cx={SIZE / 2}
+          cy={SIZE / 2}
+          r={RADIUS}
+          fill="none"
+          stroke="var(--color-on-accent)"
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
@@ -58,6 +55,6 @@ export function CloseButtonRing({
         />
       </svg>
       {pick(mode, closeCard.ko, closeCard.en)}
-    </button>
+    </Button>
   );
 }

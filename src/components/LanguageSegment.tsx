@@ -13,7 +13,7 @@ export function LanguageSegment() {
   return (
     <div
       className="relative flex items-center gap-1 bg-fill p-1"
-      style={{ height: "var(--size-segment-track)", borderRadius: "var(--radius-track)" }}
+      style={{ height: "var(--size-segment-track)", borderRadius: "var(--radius-btn-lg)" }}
     >
       {languageOptions.map((option) => {
         const selected = option.mode === mode;
@@ -31,7 +31,7 @@ export function LanguageSegment() {
                 transition={transition}
                 className="absolute inset-0 bg-paper"
                 style={{
-                  borderRadius: "calc(var(--radius-track) - 0.25rem)",
+                  borderRadius: "calc(var(--radius-btn-lg) - 0.1875rem)",
                   border: "1px solid var(--color-hairline)",
                   zIndex: -1,
                 }}

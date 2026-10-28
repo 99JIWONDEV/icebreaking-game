@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#efebe3",
+  // <meta name="theme-color"> needs a literal value (can't reference a CSS custom property) — keep in sync with --color-canvas in globals.css
+  themeColor: "#f7f0e3",
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,

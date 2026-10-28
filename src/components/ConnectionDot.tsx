@@ -2,7 +2,7 @@ import type { ConnectionState } from "@/lib/table/types";
 
 /** Static only — DESIGN.md bans infinite-repeat animation, so no pulsing spinner here. */
 export function ConnectionDot({ connection }: { connection: ConnectionState }) {
-  const color = connection === "offline" ? "var(--color-accent)" : "var(--color-ink-sub)";
+  const color = connection === "offline" ? "var(--color-danger)" : "var(--color-ink-sub)";
 
   return (
     <span

@@ -34,7 +34,6 @@ export function CardBack({
       className="block min-h-[var(--size-touch-min)] w-full"
       style={{
         ...cardShapeStyle,
-        opacity: used ? 0.4 : 1,
         cursor: interactive ? "pointer" : "default",
       }}
     >

@@ -10,15 +10,29 @@
 }
 
 @theme {
-  /* ---- color ---- */
-  --color-canvas: #efebe3;
-  --color-paper: #faf6ee;
-  --color-ink: #211e1a;
-  --color-ink-sub: #6f6859;
-  --color-hairline: #ded6c4;
-  --color-fill: #e4decf;
-  --color-accent: #a34a2b;
-  --color-scrim: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  /* ---- color — "Harvest" palette (Step 3, light only) ---- */
+  --color-canvas: #f7f0e3;
+  --color-paper: #fffdf8;
+  --color-ink: #2b2118;
+  --color-ink-sub: #6b5e4e;
+  --color-hairline: #e0d2b8;
+  --color-line-strong: #8f7f66;
+  --color-fill: #ebe0cc;
+  --color-accent: #a33f1c;
+  --color-accent-ink: #7f3216;
+  --color-accent-weak: color-mix(in srgb, var(--color-accent) 12%, var(--color-canvas));
+  --color-scrim: rgb(60 38 22 / 0.55);
+  --color-danger: #b42318;
+  --color-on-accent: #ffffff;
+  --color-outline-border: #a09075;
+
+  /* 카드 뒷면 = 카테고리 색 (채도 낮춘 수확기 팔레트, 전부 밝다) */
+  --color-cat-warmup: #f2c497;
+  --color-cat-me: #efdaa6;
+  --color-cat-memories: #cfd8b8;
+  --color-cat-whatif: #ebb8b2;
+  --color-cat-faith: #e0cdb0;
+  --color-cat-together: #f7e3c8;
 
   /* ---- font families ---- */
   --font-sans: "Pretendard Variable", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -47,9 +61,19 @@
   --text-label--font-weight: 600;
   --text-label--letter-spacing: 0.01em;
 
-  --text-btn: 1.0625rem;
-  --text-btn--line-height: 1.5rem;
-  --text-btn--font-weight: 600;
+  --text-btn-xl: 1.0625rem;
+  --text-btn-xl--line-height: 1.5rem;
+  --text-btn-xl--font-weight: 600;
+
+  --text-btn-lg: 1rem;
+  --text-btn-lg--line-height: 1.5rem;
+  --text-btn-lg--font-weight: 600;
+
+  --text-btn-md: 0.9375rem;
+  --text-btn-md--line-height: 1.375rem;
+  --text-btn-md--font-weight: 600;
+
+  /* sm 버튼 글자는 text-label(13/18/600)과 동일해서 별도 토큰을 만들지 않고 재사용한다 */
 
   --text-body: 1rem;
   --text-body--line-height: 1.5rem;
@@ -68,21 +92,35 @@
   --text-title--line-height: 2.25rem;
   --text-title--font-weight: 700;
 
-  /* ---- radius (3종 원칙: track가 격자의 작은 카드 radius도 겸한다, DESIGN.md 참고) ---- */
-  --radius-track: 0.75rem;
-  --radius-cta: 1rem;
-  --radius-card: 1.25rem;
+  --text-input-number: 2rem;
+  --text-input-number--line-height: 2.5rem;
+  --text-input-number--font-weight: 700;
 
-  /* ---- shadow (카드 외 그림자 금지 — 들린 카드/열린 카드 예외 한 종류뿐) ---- */
+  /* ---- radius ---- */
+  --radius-track: 0.75rem;
+  --radius-card: 1.25rem;
+  --radius-btn-xl: 0.75rem;
+  --radius-btn-lg: 0.625rem;
+  --radius-btn-md: 0.625rem;
+  --radius-btn-sm: 0.5rem;
+  /* 입력창은 xl 버튼과 같은 12px — 둘 다 "가장 큰 터치 대상" 급이라 공유한다 */
+  --radius-input: 0.75rem;
+
+  /* ---- shadow (카드 외 그림자 금지 — 들린 카드/열린 카드 예외, 버튼엔 쓰지 않는다) ---- */
   --shadow-lifted: 0 12px 24px -8px color-mix(in srgb, var(--color-ink) 28%, transparent);
 
   /* ---- component sizes ---- */
   --size-topbar: 3.25rem;
-  --size-cta: 3.5rem;
-  --size-segment-track: 2.25rem;
+  --size-btn-xl: 3.5rem;
+  --size-btn-lg: 3rem;
+  --size-btn-md: 2.5rem;
+  --size-btn-sm: 2rem;
+  --size-segment-track: 2.5rem;
   --size-card-max: 22.5rem;
   --size-grid-gap: 0.75rem;
   --size-touch-min: 2.75rem;
+  --size-input-table: 4.5rem;
+  --size-cta-fade: 1.75rem;
 
   /* ---- layout ---- */
   --container-app: 430px;
@@ -108,13 +146,7 @@ html[data-intro="skip"] #intro-splash {
   display: none;
 }
 
-/* 카드 뒷면 종이 인쇄 질감 — 투명도 6% 이하의 아주 옅은 사선 패턴 */
-.card-back-texture {
-  background-image: repeating-linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-paper) 6%, transparent) 0px,
-    color-mix(in srgb, var(--color-paper) 6%, transparent) 1px,
-    transparent 1px,
-    transparent 7px
-  );
+/* 하단 고정 CTA 바 위, 격자가 버튼 뒤로 부드럽게 사라지는 가림막(장식 아님) */
+.cta-fade-mask {
+  background: linear-gradient(to bottom, transparent, var(--color-canvas));
 }

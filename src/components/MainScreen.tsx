@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence } from "motion/react";
+import { BottomBar, bottomBarClearance } from "@/components/BottomBar";
+import { Button } from "@/components/Button";
 import { CardGrid } from "@/components/CardGrid";
 import { LiveAnnouncer } from "@/components/LiveAnnouncer";
 import { MenuDrawer } from "@/components/MenuDrawer";
 import { OpenCardOverlay } from "@/components/OpenCardOverlay";
-import { PrimaryButton } from "@/components/PrimaryButton";
 import { TopBar } from "@/components/TopBar";
+import { categoryColorVar } from "@/lib/categoryColors";
 import { DRAW_RANDOM_STEP_MS, DRAW_RANDOM_SUSPENSE_MS } from "@/lib/config";
 import { categoryExhausted, drawRandom as drawRandomCopy, menu, pick, progress, topBar } from "@/lib/i18n";
 import { categories, questionById, questionsInCategory, questions } from "@/lib/questions";
@@ -27,6 +29,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   const [suspenseTargetId, setSuspenseTargetId] = useState<string | null>(null);
   const [animatedCardId, setAnimatedCardId] = useState<string | null>(null);
   const [prevCardId, setPrevCardId] = useState<string | null | undefined>(undefined);
+  const [drawPending, setDrawPending] = useState(false);
   const suspenseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { message, notifyLocalClose } = useTableAnnouncements(state, clientId, mode);
@@ -130,7 +133,12 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   }
 
   async function handleDrawRandom() {
-    await drawRandom(category === "all" ? undefined : category);
+    setDrawPending(true);
+    try {
+      await drawRandom(category === "all" ? undefined : category);
+    } finally {
+      setDrawPending(false);
+    }
   }
 
   async function handleClose() {
@@ -147,7 +155,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
     <div className="mx-auto flex min-h-dvh flex-col bg-canvas" style={{ maxWidth: "var(--container-app)" }}>
       <LiveAnnouncer message={message} />
       {connection !== "connected" && (
-        <div role="status" className="px-5 py-2 text-center text-label text-accent">
+        <div role="status" className="px-5 py-2 text-center text-label text-danger">
           {pick(mode, topBar.offlineBanner.ko, topBar.offlineBanner.en)}
         </div>
       )}
@@ -157,13 +165,18 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
         </div>
 
         <div className="flex flex-col gap-1 px-5 pb-4">
-          <h1 className="font-sans text-ink text-title">{pick(mode, currentCategoryLabel.ko, currentCategoryLabel.en)}</h1>
+          <h1 className="flex items-center gap-2 font-sans text-ink text-title">
+            {category !== "all" && (
+              <span aria-hidden className="size-2 rounded-full" style={{ background: categoryColorVar(category) }} />
+            )}
+            {pick(mode, currentCategoryLabel.ko, currentCategoryLabel.en)}
+          </h1>
           <p className="text-label text-ink-sub">
             {pick(mode, progress(currentCounts.used, currentCounts.total).ko, progress(currentCounts.used, currentCounts.total).en)}
           </p>
         </div>
 
-        <div className="flex-1 px-5 pb-6">
+        <div className="flex-1 px-5" style={{ paddingBottom: bottomBarClearance(1) }}>
           <CardGrid
             category={category}
             questions={categoryOrdered}
@@ -175,22 +188,22 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
           />
         </div>
 
-        <div className="px-5 pb-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <BottomBar hidden={!!state.current}>
           {categoryExhaustedNow ? (
-            <div className="flex flex-col gap-3 text-center">
-              <p className="text-body text-ink-sub">
+            <>
+              <p className="text-center text-body text-ink-sub">
                 {pick(mode, categoryExhausted.message.ko, categoryExhausted.message.en)}
               </p>
-              <PrimaryButton onClick={handleReshuffle}>
+              <Button onClick={handleReshuffle} size="xl" variant="fill" display="full">
                 {pick(mode, categoryExhausted.reshuffle.ko, categoryExhausted.reshuffle.en)}
-              </PrimaryButton>
-            </div>
+              </Button>
+            </>
           ) : (
-            <PrimaryButton onClick={handleDrawRandom} disabled={gridDisabled}>
+            <Button onClick={handleDrawRandom} size="xl" variant="fill" display="full" disabled={gridDisabled} loading={drawPending}>
               {pick(mode, drawRandomCopy.ko, drawRandomCopy.en)}
-            </PrimaryButton>
+            </Button>
           )}
-        </div>
+        </BottomBar>
       </div>
 
       <AnimatePresence>

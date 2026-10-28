@@ -32,6 +32,9 @@ export const tableEntry = {
   }),
 };
 
+export const tableNumberLabel = { ko: "테이블 번호", en: "Table number" };
+export const tableNumberPlaceholder = { ko: "예: 7", en: "e.g. 7" };
+
 export const topBar = {
   menuLabel: { ko: "메뉴 열기", en: "Open menu" },
   table: (n: number) => ({ ko: `${n}번 테이블`, en: `Table ${n}` }),
@@ -72,6 +75,11 @@ export const menu = {
   confirm: { ko: "확인", en: "Confirm" },
   cancel: { ko: "취소", en: "Cancel" },
   language: { ko: "언어", en: "Language" },
+};
+
+export const localFallback = {
+  prompt: { ko: "이 기기에서만 진행할 수 있어요", en: "You can continue on this device only" },
+  backToServer: { ko: "서버로 돌아가기", en: "Back to server" },
 };
 
 export const liveMessages = {
