@@ -70,7 +70,7 @@ export function MenuDrawer({
             className="flex flex-1 flex-col overflow-y-auto"
             style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <section className="flex flex-col px-5 py-5">
+            <section className="flex flex-col px-5 pt-5">
               <h3 className="mb-1 text-label text-ink-sub">{pick(mode, menu.category.ko, menu.category.en)}</h3>
               {categoryOptions.map((c, index) => {
                 const selected = c.id === category;
@@ -108,9 +108,14 @@ export function MenuDrawer({
               })}
             </section>
 
-            <div className="h-px shrink-0" style={{ backgroundColor: "var(--color-hairline)" }} />
-
-            <section className="flex flex-col gap-3 px-5 py-5">
+            {/* v3 후속: 섹션 사이 간격은 양쪽 padding을 더하지 않고 margin-top 24px 하나로만 준다
+                (이전엔 카테고리 섹션 pb-5(20px) + 구분선 1px + 이 섹션 pt-5(20px) = 41px로 겹쳤다 —
+                Playwright로 실측 확인, .review/menu_measure.mjs). hairline은 그 24px 안에
+                끼워 넣는다(margin 23px + border 1px = 24px) — padding을 더 얹지 않는다. */}
+            <section
+              className="flex flex-col gap-3 px-5 pb-5"
+              style={{ marginTop: "calc(1.5rem - 1px)", borderTop: "1px solid var(--color-hairline)" }}
+            >
               <h3 className="text-label text-ink-sub">{pick(mode, menu.table.ko, menu.table.en)}</h3>
               {!changingTable ? (
                 <div className="flex flex-col items-start gap-2">
@@ -149,9 +154,10 @@ export function MenuDrawer({
               )}
             </section>
 
-            <div className="h-px shrink-0" style={{ backgroundColor: "var(--color-hairline)" }} />
-
-            <section className="flex flex-col gap-2 px-5 py-5">
+            <section
+              className="flex flex-col gap-2 px-5 pb-5"
+              style={{ marginTop: "calc(1.5rem - 1px)", borderTop: "1px solid var(--color-hairline)" }}
+            >
               <h3 className="text-label text-ink-sub">{pick(mode, menu.language.ko, menu.language.en)}</h3>
               <LanguageSegment />
             </section>

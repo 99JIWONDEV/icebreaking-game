@@ -6,7 +6,7 @@ import { CardBackFace } from "@/components/CardBackFace";
 import { CloseButtonRing } from "@/components/CloseButtonRing";
 import { QuestionCard } from "@/components/QuestionCard";
 import { MIN_OPEN_MS } from "@/lib/config";
-import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, textRevealDelayMs } from "@/lib/motion";
+import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, shineTransition, textRevealDelayMs } from "@/lib/motion";
 import { questionIndex, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
@@ -129,6 +129,22 @@ export function OpenCardOverlay({
                 }}
               >
                 <QuestionCard question={question} revealed={textRevealed} />
+                {playIntro && (
+                  // 디자인 v3 후속 §1a: 카드가 자리를 잡는 순간 한 번 지나가는 대각선 스윕.
+                  // 카드 면이 흰색이라 흰 띠만으로는 안 보여서, 띠 양옆에 ink 5% 가장자리를
+                  // 줘서 실제로 보이게 한다(영상 프레임 캡처로 확인, .review/sweep_check.mjs).
+                  <motion.div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-y-0 w-1/3"
+                    style={{
+                      background:
+                        "linear-gradient(105deg, transparent 0%, color-mix(in srgb, var(--color-ink) 5%, transparent) 42%, transparent 46%, transparent 54%, color-mix(in srgb, var(--color-ink) 5%, transparent) 58%, transparent 100%)",
+                    }}
+                    initial={{ left: "-40%" }}
+                    animate={{ left: "110%" }}
+                    transition={shineTransition}
+                  />
+                )}
               </div>
             </motion.div>
           </motion.div>
