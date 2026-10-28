@@ -1,26 +1,120 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Pretendard Variable — self-hosted, see public/fonts/PretendardVariable.woff2 */
+@font-face {
+  font-family: "Pretendard Variable";
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+  src: url("/fonts/PretendardVariable.woff2") format("woff2-variations");
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* ---- color ---- */
+  --color-canvas: #efebe3;
+  --color-paper: #faf6ee;
+  --color-ink: #211e1a;
+  --color-ink-sub: #6f6859;
+  --color-hairline: #ded6c4;
+  --color-fill: #e4decf;
+  --color-accent: #a34a2b;
+  --color-scrim: color-mix(in srgb, var(--color-ink) 72%, transparent);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ---- font families ---- */
+  --font-sans: "Pretendard Variable", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif-kr: var(--font-serif-kr-loaded), serif;
+  --font-serif-en: var(--font-serif-en-loaded), serif;
+
+  /* ---- typography tokens (size / line-height / weight) ---- */
+  --text-question-ko-both: 1.625rem;
+  --text-question-ko-both--line-height: 2.375rem;
+  --text-question-ko-both--font-weight: 500;
+
+  --text-question-en-both: 1.0625rem;
+  --text-question-en-both--line-height: 1.625rem;
+  --text-question-en-both--font-weight: 400;
+
+  --text-question-ko-solo: 1.875rem;
+  --text-question-ko-solo--line-height: 2.75rem;
+  --text-question-ko-solo--font-weight: 500;
+
+  --text-question-en-solo: 1.75rem;
+  --text-question-en-solo--line-height: 2.375rem;
+  --text-question-en-solo--font-weight: 400;
+
+  --text-label: 0.8125rem;
+  --text-label--line-height: 1.125rem;
+  --text-label--font-weight: 600;
+  --text-label--letter-spacing: 0.01em;
+
+  --text-btn: 1.0625rem;
+  --text-btn--line-height: 1.5rem;
+  --text-btn--font-weight: 600;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-body--font-weight: 400;
+
+  --text-intro-ko: 1.5rem;
+  --text-intro-ko--line-height: 2.125rem;
+  --text-intro-ko--font-weight: 500;
+
+  --text-intro-en: 0.9375rem;
+  --text-intro-en--line-height: 1.375rem;
+  --text-intro-en--font-weight: 400;
+  --text-intro-en--letter-spacing: 0.02em;
+
+  --text-title: 1.75rem;
+  --text-title--line-height: 2.25rem;
+  --text-title--font-weight: 700;
+
+  /* ---- radius (3종 원칙: track가 격자의 작은 카드 radius도 겸한다, DESIGN.md 참고) ---- */
+  --radius-track: 0.75rem;
+  --radius-cta: 1rem;
+  --radius-card: 1.25rem;
+
+  /* ---- shadow (카드 외 그림자 금지 — 들린 카드/열린 카드 예외 한 종류뿐) ---- */
+  --shadow-lifted: 0 12px 24px -8px color-mix(in srgb, var(--color-ink) 28%, transparent);
+
+  /* ---- component sizes ---- */
+  --size-topbar: 3.25rem;
+  --size-cta: 3.5rem;
+  --size-segment-track: 2.25rem;
+  --size-card-max: 22.5rem;
+  --size-grid-gap: 0.75rem;
+  --size-touch-min: 2.75rem;
+
+  /* ---- layout ---- */
+  --container-app: 430px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+:lang(ko) {
+  word-break: keep-all;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+/* layout.tsx의 인라인 스크립트가 10분 이내 재방문을 감지하면 설정한다 — 깜빡임 없이 인트로를 숨긴다 */
+html[data-intro="skip"] #intro-splash {
+  display: none;
+}
+
+/* 카드 뒷면 종이 인쇄 질감 — 투명도 6% 이하의 아주 옅은 사선 패턴 */
+.card-back-texture {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-paper) 6%, transparent) 0px,
+    color-mix(in srgb, var(--color-paper) 6%, transparent) 1px,
+    transparent 1px,
+    transparent 7px
+  );
 }
