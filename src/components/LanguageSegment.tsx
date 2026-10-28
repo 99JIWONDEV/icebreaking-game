@@ -25,7 +25,7 @@ export function LanguageSegment() {
             key={option.mode}
             type="button"
             onClick={() => setMode(option.mode)}
-            className="relative z-10 flex items-center justify-center px-4 text-label text-ink-sub transition-colors"
+            className="relative z-10 flex items-center justify-center px-4 text-label text-ink-sub outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
             style={{ color: selected ? "var(--color-ink)" : undefined }}
           >
             {selected && (

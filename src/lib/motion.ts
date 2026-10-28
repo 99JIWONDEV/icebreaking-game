@@ -33,10 +33,13 @@ export const cardCloseFlipTransition = {
 export const textRevealDelayMs = 900;
 export const textRevealStaggerMs = 90;
 
-/** 카드가 자리를 잡는 시점(이동→뒤집기 직후)에 한 번 지나가는 대각선 스윕 — 디자인 v3 후속 §1a.
- *  흑백 톤(색 없음): OpenCardOverlay의 그라디언트 자체가 ink 5% 가장자리로 만든다. */
+/** 카드가 자리를 잡는 시점(이동→뒤집기 직후)에 한 번 지나가는 대각선 스윕 — 디자인 v3 후속 §1a/§3.
+ *  Step 1/2 원본 값 그대로 복원했다(git show c5c2fa4:src/lib/motion.ts — delay/duration/ease
+ *  전부 동일, 한 번도 바뀐 적 없었다). 당시 카드 면은 `#FAF6EE`(크림색)라 흰 35% 그라디언트가
+ *  보였지만, 지금은 `#FFFFFF`라 색만 OpenCardOverlay에서 ink 톤으로 바꿨다 — 기하(각도/폭/
+ *  타이밍)는 원본 그대로. */
 export const shineTransition = {
   delay: 0.85,
-  duration: 0.7,
-  ease: "easeOut",
+  duration: 0.9,
+  ease: "easeInOut",
 } as const;

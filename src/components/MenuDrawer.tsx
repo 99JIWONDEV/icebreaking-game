@@ -58,7 +58,12 @@ export function MenuDrawer({
   const categoryOptions = [{ id: "all", ko: menu.all.ko, en: menu.all.en }, ...categories];
 
   return (
-    <Drawer.Root open={open} onOpenChange={onOpenChange} direction="left">
+    // v3 후속: vaul은 기본적으로 Radix Dialog의 "열리면 포커스를 다이얼로그로 옮기는" 동작을
+    // 막는다(autoFocus 기본값 false) — 그래서 지금까지는 열어도 포커스가 메뉴 버튼에 그대로
+    // 남아 있었다(Playwright로 확인). autoFocus를 켜면 Radix가 Drawer.Content(이미 outline-none,
+    // 안쪽 요소로 점프하지 않음)로 포커스를 옮긴다 — 시각적 링 없이 접근성 요구(다이얼로그가
+    // 열리면 포커스가 그 안으로 들어가야 한다)만 충족한다.
+    <Drawer.Root open={open} onOpenChange={onOpenChange} direction="left" autoFocus>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-scrim" />
         <Drawer.Content
@@ -84,7 +89,7 @@ export function MenuDrawer({
                       setCategory(c.id);
                       onOpenChange(false);
                     }}
-                    className="flex items-center justify-between text-body text-ink"
+                    className="flex items-center justify-between text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
                     style={{
                       height: "3.5rem",
                       borderTop: index > 0 ? "1px solid var(--color-hairline)" : undefined,
@@ -108,13 +113,14 @@ export function MenuDrawer({
               })}
             </section>
 
-            {/* v3 후속: 섹션 사이 간격은 양쪽 padding을 더하지 않고 margin-top 24px 하나로만 준다
-                (이전엔 카테고리 섹션 pb-5(20px) + 구분선 1px + 이 섹션 pt-5(20px) = 41px로 겹쳤다 —
-                Playwright로 실측 확인, .review/menu_measure.mjs). hairline은 그 24px 안에
-                끼워 넣는다(margin 23px + border 1px = 24px) — padding을 더 얹지 않는다. */}
+            {/* v3 후속 2차 수정: 구분선 위/아래를 "보이는 콘텐츠 기준" 20px로 맞춘다. 카테고리
+                행은 56px 안에서 텍스트가 가운데 정렬이라 행 끝과 텍스트 보이는 아래 끝 사이에
+                이미 ~18px 내부 여백이 있다(실측, .review/menu_precise.mjs) — 그만큼 margin-top을
+                줄여서 보정한다. 구분선 아래는 라벨 자체 line-height 여백(~1px)만 있던 걸
+                padding-top으로 채워 20px로 맞춘다. */}
             <section
               className="flex flex-col gap-3 px-5 pb-5"
-              style={{ marginTop: "calc(1.5rem - 1px)", borderTop: "1px solid var(--color-hairline)" }}
+              style={{ marginTop: "0.125rem", borderTop: "1px solid var(--color-hairline)", paddingTop: "1.1875rem" }}
             >
               <h3 className="text-label text-ink-sub">{pick(mode, menu.table.ko, menu.table.en)}</h3>
               {!changingTable ? (
@@ -156,7 +162,7 @@ export function MenuDrawer({
 
             <section
               className="flex flex-col gap-2 px-5 pb-5"
-              style={{ marginTop: "calc(1.5rem - 1px)", borderTop: "1px solid var(--color-hairline)" }}
+              style={{ borderTop: "1px solid var(--color-hairline)", paddingTop: "1.1875rem" }}
             >
               <h3 className="text-label text-ink-sub">{pick(mode, menu.language.ko, menu.language.en)}</h3>
               <LanguageSegment />

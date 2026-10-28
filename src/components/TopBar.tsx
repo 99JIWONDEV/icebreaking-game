@@ -26,7 +26,7 @@ export function TopBar({
         type="button"
         onClick={onOpenMenu}
         aria-label={pick(mode, topBar.menuLabel.ko, topBar.menuLabel.en)}
-        className="flex size-11 items-center justify-center text-ink"
+        className="flex size-11 items-center justify-center text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2"
       >
         <svg width="20" height="14" viewBox="0 0 20 14" fill="none" aria-hidden>
           <path d="M0 1h20M0 7h20M0 13h20" stroke="currentColor" strokeWidth="1.5" />

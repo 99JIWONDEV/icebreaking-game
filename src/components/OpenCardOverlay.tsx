@@ -130,15 +130,19 @@ export function OpenCardOverlay({
               >
                 <QuestionCard question={question} revealed={textRevealed} />
                 {playIntro && (
-                  // 디자인 v3 후속 §1a: 카드가 자리를 잡는 순간 한 번 지나가는 대각선 스윕.
-                  // 카드 면이 흰색이라 흰 띠만으로는 안 보여서, 띠 양옆에 ink 5% 가장자리를
-                  // 줘서 실제로 보이게 한다(영상 프레임 캡처로 확인, .review/sweep_check.mjs).
+                  // 디자인 v3 후속 §3: Step 1/2 원본 스윕(git show c5c2fa4) 기하를 그대로
+                  // 복원했다 — 각도 100deg, 폭 1/3, 0.85s 지연/0.9s 지속/easeInOut 전부 원본.
+                  // 원본은 당시 카드 면(#FAF6EE, 크림색) 위에 흰 35% 그라디언트라 보였지만,
+                  // 지금 카드 면은 #FFFFFF라 흰색은 원리상 안 보인다(흰 위에 흰은 불투명도와
+                  // 무관하게 흰으로 합성된다). 색만 하나의 부드러운 ink 톤 피크로 바꿨다 —
+                  // 이전 시도(5% 가장자리 두 줄)는 "어둡다"는 피드백을 받아, 더 옅고(4%) 가장자리
+                  // 둘이 아니라 가운데 하나의 완만한 산 모양으로 바꿔 더 밝게 보이게 했다.
                   <motion.div
                     aria-hidden
                     className="pointer-events-none absolute inset-y-0 w-1/3"
                     style={{
                       background:
-                        "linear-gradient(105deg, transparent 0%, color-mix(in srgb, var(--color-ink) 5%, transparent) 42%, transparent 46%, transparent 54%, color-mix(in srgb, var(--color-ink) 5%, transparent) 58%, transparent 100%)",
+                        "linear-gradient(100deg, transparent, color-mix(in srgb, var(--color-ink) 7%, transparent), transparent)",
                     }}
                     initial={{ left: "-40%" }}
                     animate={{ left: "110%" }}
