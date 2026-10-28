@@ -23,12 +23,10 @@ export const intro = {
 };
 
 export const tableEntry = {
-  title: { ko: "테이블 번호를 알려 주세요", en: "What's your table number?" },
-  subtitle: { ko: "테이블 위에 적힌 번호예요", en: "It's printed on your table." },
   join: { ko: "입장하기", en: "Join" },
   error: (max: number) => ({
-    ko: `1부터 ${max}까지 입력할 수 있어요`,
-    en: `You can enter a number from 1 to ${max}`,
+    ko: `1~${max} 사이로 입력해 주세요`,
+    en: `Enter 1–${max}`,
   }),
 };
 
@@ -54,8 +52,14 @@ export const progress = (used: number, total: number) => ({
 export const drawRandom = { ko: "랜덤으로 뽑기", en: "Draw at random" };
 
 export const cardBack = {
-  closed: (n: number) => ({ ko: `카드 ${n}번, 닫힘`, en: `Card ${n}, closed` }),
-  used: (n: number) => ({ ko: `카드 ${n}번, 이미 사용함`, en: `Card ${n}, already used` }),
+  closed: (n: number, category: { ko: string; en: string }) => ({
+    ko: `${n}번 카드, ${category.ko}`,
+    en: `Card ${n}, ${category.en}`,
+  }),
+  used: (n: number, category: { ko: string; en: string }) => ({
+    ko: `${n}번 카드, ${category.ko} (사용함)`,
+    en: `Card ${n}, ${category.en} (used)`,
+  }),
 };
 
 export const closeCard = { ko: "카드 덮기", en: "Close card" };

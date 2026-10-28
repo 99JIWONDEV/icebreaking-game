@@ -29,27 +29,14 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
       className="flex min-h-dvh flex-col bg-canvas px-5"
       style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: bottomBarClearance(1) }}
     >
-      <div className="flex flex-1 flex-col justify-center gap-6">
-        <div className="flex flex-col gap-2 text-left">
-          <h1 className="text-pretty font-sans text-ink text-question-ko-solo">
-            {mode === "en" ? tableEntry.title.en : tableEntry.title.ko}
-          </h1>
-          {mode === "both" && (
-            <p lang="en" className="font-sans text-ink-sub text-question-en-both px-1">
-              {tableEntry.title.en}
-            </p>
-          )}
-          <div>
-            {mode !== "en" && <p className="text-body text-ink-sub px-1">{tableEntry.subtitle.ko}</p>}
-            {mode !== "ko" && <p className="text-body text-ink-sub px-1">{tableEntry.subtitle.en}</p>}
-          </div>
-        </div>
-
+      {/* v3 §3: 화면 제목(이전 "테이블 번호를 알려 주세요")은 TableNumberInput의 라벨과
+          중복이라 지웠다 — 라벨 하나만 남긴다. */}
+      <div className="flex flex-1 flex-col justify-center">
         <TableNumberInput id={inputId} value={value} onChange={(v) => { setValue(v); setError(false); }} error={error} />
       </div>
 
       <BottomBar>
-        <Button onClick={submit} size="xl" variant="fill" display="full">
+        <Button onClick={submit} size="lg" variant="fill">
           {pick(mode, tableEntry.join.ko, tableEntry.join.en)}
         </Button>
       </BottomBar>

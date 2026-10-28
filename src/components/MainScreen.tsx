@@ -8,11 +8,11 @@ import { CardGrid } from "@/components/CardGrid";
 import { LiveAnnouncer } from "@/components/LiveAnnouncer";
 import { MenuDrawer } from "@/components/MenuDrawer";
 import { OpenCardOverlay } from "@/components/OpenCardOverlay";
+import { SequentialGrid } from "@/components/SequentialGrid";
 import { TopBar } from "@/components/TopBar";
 import { DRAW_RANDOM_STEP_MS, DRAW_RANDOM_SUSPENSE_MS } from "@/lib/config";
 import { categoryExhausted, drawRandom as drawRandomCopy, menu, pick, progress, topBar } from "@/lib/i18n";
 import { categories, questionById, questionsInCategory, questions } from "@/lib/questions";
-import { seededShuffle } from "@/lib/seededShuffle";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useTableAnnouncements } from "@/lib/table/useTableAnnouncements";
 import { useTableState } from "@/lib/table/useTableState";
@@ -33,11 +33,9 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
 
   const { message, notifyLocalClose } = useTableAnnouncements(state, clientId, mode);
 
-  const allOrdered = useMemo(() => seededShuffle(questions, tableNumber), [tableNumber]);
-  const categoryOrdered = useMemo(
-    () => seededShuffle(questionsInCategory(category), tableNumber),
-    [category, tableNumber],
-  );
+  // v3 §4-1: 테이블 시드 셔플 제거 — 격자는 항상 questions.json 배열 순서(번호 순서)다.
+  const allOrdered = questions;
+  const categoryOrdered = useMemo(() => questionsInCategory(category), [category]);
 
   const usedIds = useMemo(() => state?.used ?? [], [state]);
 
@@ -171,15 +169,25 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
         </div>
 
         <div className="flex-1 px-5" style={{ paddingBottom: bottomBarClearance(1) }}>
-          <CardGrid
-            category={category}
-            questions={categoryOrdered}
-            usedIds={usedIds}
-            gridDisabled={gridDisabled}
-            highlightedCardId={highlightedCardId}
-            openCardId={suspenseTargetId ? null : state.current?.cardId ?? null}
-            onOpenCard={handleOpenCard}
-          />
+          {category === "all" ? (
+            <SequentialGrid
+              usedIds={usedIds}
+              gridDisabled={gridDisabled}
+              highlightedCardId={highlightedCardId}
+              openCardId={suspenseTargetId ? null : state.current?.cardId ?? null}
+              onOpenCard={handleOpenCard}
+            />
+          ) : (
+            <CardGrid
+              key={category}
+              questions={categoryOrdered}
+              usedIds={usedIds}
+              gridDisabled={gridDisabled}
+              highlightedCardId={highlightedCardId}
+              openCardId={suspenseTargetId ? null : state.current?.cardId ?? null}
+              onOpenCard={handleOpenCard}
+            />
+          )}
         </div>
 
         <BottomBar hidden={!!state.current}>
@@ -188,12 +196,12 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
               <p className="text-center text-body text-ink-sub">
                 {pick(mode, categoryExhausted.message.ko, categoryExhausted.message.en)}
               </p>
-              <Button onClick={handleReshuffle} size="xl" variant="fill" display="full">
+              <Button onClick={handleReshuffle} size="lg" variant="fill">
                 {pick(mode, categoryExhausted.reshuffle.ko, categoryExhausted.reshuffle.en)}
               </Button>
             </>
           ) : (
-            <Button onClick={handleDrawRandom} size="xl" variant="fill" display="full" disabled={gridDisabled} loading={drawPending}>
+            <Button onClick={handleDrawRandom} size="lg" variant="fill" disabled={gridDisabled} loading={drawPending}>
               {pick(mode, drawRandomCopy.ko, drawRandomCopy.en)}
             </Button>
           )}

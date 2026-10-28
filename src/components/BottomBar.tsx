@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-const ONE_BUTTON_HEIGHT = "var(--size-btn-xl)";
+const ONE_BUTTON_HEIGHT = "var(--size-btn-lg)";
 const BAR_VERTICAL_PADDING = "calc(0.75rem + 1.5rem + env(safe-area-inset-bottom))"; // top 12px + bottom 24px+safe
 const EXTRA_CLEARANCE = "1.5rem"; // spec A-5: 바 높이 + 24px
 
@@ -24,11 +24,12 @@ export function BottomBar({ children, hidden }: { children: ReactNode; hidden?: 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 mx-auto" style={{ maxWidth: "var(--container-app)" }}>
       <div aria-hidden className="cta-fade-mask" style={{ height: "var(--size-cta-fade)" }} />
+      {/* v3 §2 "하단 바": 버튼은 전폭이 아니라 내용 폭(최소 160px)으로, 가운데 정렬 */}
       <div
-        className="pointer-events-auto flex flex-col bg-canvas"
+        className="pointer-events-auto flex flex-col items-center bg-canvas"
         style={{ gap: "0.75rem", padding: "0.75rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom))" }}
       >
-        {children}
+        <div className="flex w-full flex-col items-center gap-3 [&>button]:min-w-[var(--size-btn-min)]">{children}</div>
       </div>
     </div>
   );

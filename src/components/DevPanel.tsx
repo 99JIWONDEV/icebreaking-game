@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { setCardVariant, useCardVariant, type CardVariant } from "@/lib/cardVariant";
 import { tableRepository } from "@/lib/table/LocalMockRepository";
 import { useTableState } from "@/lib/table/useTableState";
 import { questions } from "@/lib/questions";
@@ -8,6 +9,13 @@ import { questions } from "@/lib/questions";
 export function DevPanel() {
   const [table, setTable] = useState(1);
   const { state, connection } = useTableState(table);
+  const cardVariant = useCardVariant();
+
+  // v3 §5: /dev?card=a|b로 카드 프레임 변형을 전환 — localStorage에 저장돼 메인 화면에도 적용된다.
+  useEffect(() => {
+    const param = new URLSearchParams(window.location.search).get("card");
+    if (param === "a" || param === "b") setCardVariant(param);
+  }, []);
   const [cardNumber, setCardNumber] = useState("1");
   const [offline, setOffline] = useState(false);
   const [latencyOn, setLatencyOn] = useState(false);
@@ -102,9 +110,30 @@ export function DevPanel() {
 
       <section className="flex flex-col gap-2">
         <h2 className="text-label text-ink-sub">관리자 흉내</h2>
-        <button type="button" onClick={resetTable} className="w-fit rounded border px-3 py-2" style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}>
+        <button type="button" onClick={resetTable} className="w-fit rounded border px-3 py-2" style={{ borderColor: "var(--color-ink)", color: "var(--color-ink)" }}>
           테이블 초기화 (epoch +1)
         </button>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-label text-ink-sub">카드 디자인 (v3 §5 — ?card=a|b로도 전환 가능)</h2>
+        <p className="text-label">현재: 변형 {cardVariant.toUpperCase()}</p>
+        <div className="flex gap-2">
+          {(["a", "b"] as CardVariant[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setCardVariant(v)}
+              className="rounded border px-3 py-2"
+              style={{
+                borderColor: v === cardVariant ? "var(--color-ink)" : "var(--color-hairline)",
+                fontWeight: v === cardVariant ? 700 : 400,
+              }}
+            >
+              변형 {v.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </section>
 
       <section className="flex flex-col gap-2">

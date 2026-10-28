@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// WCAG 2.1 contrast checker for the "Minimal" neutral palette (Step 3 재개정, Part A-4 §4).
-// Values below are kept in sync by hand with src/app/globals.css's @theme block —
-// if you change a token there, update the matching constant here too.
+// WCAG 2.1 contrast checker for the v3("검정 버튼") 팔레트. accent는 삭제됐다 — 남은
+// 유채색은 danger뿐이다. Values below are kept in sync by hand with src/app/globals.css's
+// @theme block — if you change a token there, update the matching constant here too.
 
 /** @type {Record<string, string>} */
 const TOKENS = {
@@ -12,9 +12,8 @@ const TOKENS = {
   hairline: "#E4E4E0",
   "line-strong": "#8C8C87",
   "fill-weak": "#EEEEEC",
-  accent: "#3F5B73",
   danger: "#B42318",
-  "on-accent": "#FFFFFF",
+  "on-ink": "#FFFFFF",
 };
 
 function hexToRgb(hex) {
@@ -46,7 +45,7 @@ const PAIRS = [
   { label: "ink-sub on canvas", fg: "ink-sub", bg: "canvas", min: 4.5 },
   { label: "ink-sub on paper", fg: "ink-sub", bg: "paper", min: 4.5 },
   { label: "ink-sub on fill-weak (used card)", fg: "ink-sub", bg: "fill-weak", min: 4.5 },
-  { label: "on-accent on accent (fill button)", fg: "on-accent", bg: "accent", min: 4.5 },
+  { label: "on-ink on ink (fill button)", fg: "on-ink", bg: "ink", min: 4.5 },
   { label: "danger on paper (error text)", fg: "danger", bg: "paper", min: 4.5 },
   { label: "danger on canvas", fg: "danger", bg: "canvas", min: 4.5 },
   { label: "line-strong on paper (input border, UI)", fg: "line-strong", bg: "paper", min: 3 },
@@ -70,7 +69,7 @@ const rows = PAIRS.map((pair) => {
 });
 
 const nameWidth = Math.max(...rows.map((r) => r.label.length)) + 2;
-console.log("대비 검증 — Minimal 팔레트 (WCAG 2.1)\n");
+console.log("대비 검증 — v3 팔레트 (WCAG 2.1)\n");
 for (const r of rows) {
   const status = r.pass ? "PASS" : "FAIL";
   const noteStr = r.note ? `  (${r.note})` : "";

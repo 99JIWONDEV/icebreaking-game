@@ -4,23 +4,27 @@ import { motion } from "motion/react";
 import { CardBackFace } from "@/components/CardBackFace";
 import { cardShapeStyle } from "@/lib/cardStyle";
 import { cardBack, pick } from "@/lib/i18n";
-import { questionIndex, type Question } from "@/lib/questions";
+import { categoryOf, questionIndex, type Question } from "@/lib/questions";
 import { useViewStore } from "@/store/useViewStore";
 
 export function CardBack({
   question,
   used,
   interactive,
+  compact,
   onOpen,
 }: {
   question: Question;
   used: boolean;
   interactive: boolean;
+  /** 4열 "전체" 구간 보기처럼 카드가 작을 때 — CardBackFace로 전달(변형 A의 No. 라벨 숨김) */
+  compact?: boolean;
   onOpen: () => void;
 }) {
   const mode = useViewStore((state) => state.mode);
   const number = questionIndex(question);
-  const label = used ? cardBack.used(number) : cardBack.closed(number);
+  const category = categoryOf(question);
+  const label = used ? cardBack.used(number, category) : cardBack.closed(number, category);
 
   return (
     <motion.button
@@ -37,7 +41,7 @@ export function CardBack({
         cursor: interactive ? "pointer" : "default",
       }}
     >
-      <CardBackFace question={question} used={used} />
+      <CardBackFace question={question} used={used} compact={compact} />
     </motion.button>
   );
 }

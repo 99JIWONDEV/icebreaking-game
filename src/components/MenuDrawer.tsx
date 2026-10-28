@@ -123,16 +123,16 @@ export function MenuDrawer({
                 <div className="flex flex-col gap-3">
                   <p className="text-body text-ink">{pick(mode, menu.confirmTable(confirmingTable).ko, menu.confirmTable(confirmingTable).en)}</p>
                   <div className="flex gap-2">
-                    <Button onClick={() => setConfirmingTable(null)} size="lg" variant="outline" display="full">
+                    <Button onClick={() => setConfirmingTable(null)} size="lg" variant="outline">
                       {pick(mode, menu.cancel.ko, menu.cancel.en)}
                     </Button>
-                    <Button onClick={confirmChangeTable} size="lg" variant="fill" display="full">
+                    <Button onClick={confirmChangeTable} size="lg" variant="fill">
                       {pick(mode, menu.confirm.ko, menu.confirm.en)}
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col items-start gap-3">
                   <TableNumberInput
                     id={draftInputId}
                     value={draftTable}
@@ -142,7 +142,7 @@ export function MenuDrawer({
                     }}
                     error={tableError}
                   />
-                  <Button onClick={submitDraftTable} size="lg" variant="fill" display="full">
+                  <Button onClick={submitDraftTable} size="lg" variant="fill">
                     {pick(mode, menu.confirm.ko, menu.confirm.en)}
                   </Button>
                 </div>

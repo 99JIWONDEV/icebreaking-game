@@ -6,17 +6,22 @@ import { CATEGORY_ENTER_TOTAL_MS, CATEGORY_STAGGER_MS } from "@/lib/config";
 import type { Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
+/**
+ * 번호 순서(questions.json 배열 순서, 테이블 시드 셔플 없음 — v3 §4-1)대로 카드를 N열로
+ * 늘어놓는 평평한 격자. 단독으로(카테고리 필터 보기) 쓰거나, SequentialGrid가 구간마다
+ * 하나씩 조립해서(전체 보기) 쓴다.
+ */
 export function CardGrid({
-  category,
   questions,
   usedIds,
   gridDisabled,
   highlightedCardId,
   openCardId,
   onOpenCard,
+  columns = 3,
+  gap = "var(--size-grid-gap)",
+  compact = false,
 }: {
-  category: string;
-  /** already in table-seeded display order — see seededShuffle(questionsInCategory(category), tableNumber) */
   questions: Question[];
   usedIds: string[];
   gridDisabled: boolean;
@@ -25,24 +30,20 @@ export function CardGrid({
    *  empty placeholder so the two don't fight over the same layoutId at once. */
   openCardId: string | null;
   onOpenCard: (question: Question) => void;
+  columns?: number;
+  gap?: string;
+  /** 4열 "전체" 보기 구간처럼 카드가 작을 때 — CardBackFace의 No. 라벨을 숨긴다(변형 A) */
+  compact?: boolean;
 }) {
   const reduced = useReducedMotion();
-  const columns = category === "all" ? 4 : 3;
-  // 20ms 간격이 기본이지만, 카드가 많은 "전체" 보기에서도 총 진입 시간이 spec의 600ms 상한을 넘지 않도록 좁힌다.
+  // 20ms 간격이 기본이지만, 카드가 많은 구간에서도 총 진입 시간이 spec의 600ms 상한을 넘지 않도록 좁힌다.
   const stepMs =
     questions.length > 1
       ? Math.min(CATEGORY_STAGGER_MS, CATEGORY_ENTER_TOTAL_MS / (questions.length - 1))
       : 0;
 
   return (
-    <div
-      key={category}
-      className="grid"
-      style={{
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-        gap: category === "all" ? "var(--size-grid-gap-all)" : "var(--size-grid-gap)",
-      }}
-    >
+    <div className="grid" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`, gap }}>
       {questions.map((question, index) => {
         const used = usedIds.includes(question.id);
         const highlighted = highlightedCardId === question.id;
@@ -62,6 +63,7 @@ export function CardGrid({
               question={question}
               used={used}
               interactive={!used && !gridDisabled}
+              compact={compact}
               onOpen={() => onOpenCard(question)}
             />
           </motion.div>

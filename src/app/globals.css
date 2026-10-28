@@ -10,8 +10,8 @@
 }
 
 @theme {
-  /* ---- color — "Minimal" neutral system (Step 3 재개정). 유채색은 accent 하나뿐,
-     주요 버튼 1개와 포커스 링에만 쓴다. 숫자·점·아이콘·배경에는 쓰지 않는다. ---- */
+  /* ---- color — v3("검정 버튼") 재개정. accent(슬레이트 블루)는 완전히 삭제했다 — 화면에
+     남는 유채색은 danger뿐이다. 주요 버튼은 ink 채움 + 흰 글자, 포커스 링도 ink. ---- */
   --color-canvas: #fafaf9;
   --color-paper: #ffffff;
   --color-ink: #171717;
@@ -19,9 +19,8 @@
   --color-hairline: #e4e4e0;
   --color-line-strong: #8c8c87;
   --color-fill-weak: #eeeeec;
-  --color-accent: #3f5b73;
   --color-danger: #b42318;
-  --color-on-accent: #ffffff;
+  --color-on-ink: #ffffff;
   --color-scrim: rgb(23 23 23 / 0.4);
 
   /* ---- font family (서체는 Pretendard Variable 하나 — Step 3 재개정에서 세리프 폰트 제거) ---- */
@@ -33,21 +32,19 @@
   --text-label--font-weight: 600;
   --text-label--letter-spacing: 0.01em;
 
+  /* v3: 13/18이지만 400 굵기인 자리(입력 예시 줄) — text-label과 굵기만 다르다 */
+  --text-caption: 0.8125rem; /* 13 */
+  --text-caption--line-height: 1.125rem;
+  --text-caption--font-weight: 400;
+
   --text-body: 0.9375rem; /* 15 — 기존 16에서 스냅 */
   --text-body--line-height: 1.5rem;
   --text-body--font-weight: 400;
 
-  --text-btn-md: 0.9375rem; /* 15 */
-  --text-btn-md--line-height: 1.375rem;
-  --text-btn-md--font-weight: 600;
-
-  --text-btn-lg: 1.0625rem; /* 17 — 기존 16에서 스냅, xl과 같은 크기 공유 */
-  --text-btn-lg--line-height: 1.5rem;
-  --text-btn-lg--font-weight: 600;
-
-  --text-btn-xl: 1.0625rem; /* 17 */
-  --text-btn-xl--line-height: 1.5rem;
-  --text-btn-xl--font-weight: 600;
+  /* v3: lg·md 버튼이 같은 글자 크기를 공유한다(스펙 §2 — md의 "14"는 단계에 없어 15로 스냅) */
+  --text-btn: 0.9375rem; /* 15 */
+  --text-btn--line-height: 1.375rem;
+  --text-btn--font-weight: 600;
 
   --text-question-en-both: 1.0625rem; /* 17 */
   --text-question-en-both--line-height: 1.625rem;
@@ -79,41 +76,57 @@
   --text-card-number--font-weight: 600;
   --text-card-number--letter-spacing: -0.02em;
 
+  /* v3: "전체" 보기처럼 카드가 작을 때 변형 A가 쓰는 축소 번호(No. 라벨은 숨긴다) */
+  --text-card-number-sm: 1.375rem; /* 22 */
+  --text-card-number-sm--line-height: 1.75rem;
+  --text-card-number-sm--font-weight: 600;
+  --text-card-number-sm--letter-spacing: -0.02em;
+
   --text-question-ko-solo: 2rem; /* 32 — 기존 30에서 스냅, "둘 다"보다 뚜렷이 크게 */
   --text-question-ko-solo--line-height: 3rem;
   --text-question-ko-solo--font-weight: 500;
 
-  --text-input-number: 2rem; /* 32 */
-  --text-input-number--line-height: 2.5rem;
-  --text-input-number--font-weight: 700;
+  /* v3: 입력창이 72→52px로 작아지며 숫자도 32→24로 내렸다(24는 단계에 없어 22로 스냅) */
+  --text-input-number: 1.375rem; /* 22 — 24 요청값의 가장 가까운 기존 단계 */
+  --text-input-number--line-height: 2rem;
+  --text-input-number--font-weight: 600;
 
-  /* sm 버튼 글자는 text-label(13/18/600)과 동일해서 별도 토큰을 만들지 않고 재사용한다 */
+  /* sm 버튼 글자는 text-label(13/18/600)과 동일해서 별도 토큰을 만들지 않고 재사용한다.
+     lg·md 버튼 글자는 text-btn(15/22/600), 구간 헤더 왼쪽도 text-btn 재사용. */
 
   /* ---- radius — 8 / 10 / 12 / 16 네 가지만 ---- */
-  --radius-btn-sm: 0.5rem; /* 8 */
-  --radius-btn-md: 0.625rem; /* 10 */
-  --radius-btn-lg: 0.625rem; /* 10 */
-  --radius-btn-xl: 0.75rem; /* 12 */
+  --radius-btn: 0.5rem; /* 8 — v3: lg/md/sm 버튼 전부 공유(이전엔 크기별로 달랐다) */
+  --radius-segment-track: 0.625rem; /* 10 — LanguageSegment 전용(이전 이름 radius-btn-lg) */
   --radius-track: 0.75rem; /* 12 — 격자 카드 뒷면 */
-  --radius-input: 0.75rem; /* 12 */
+  --radius-input: 0.5rem; /* 8 — v3: 12에서 내림(스펙 §3-4) */
   --radius-card: 1rem; /* 16 — 열린 카드(앞면), 유일하게 더 큰 radius */
+  --radius-card-inner: 0.4375rem; /* 7 — 카드 변형 A의 안쪽 프레임 */
 
   /* ---- shadow — 카드·버튼 그림자 금지, 열린 카드 1단계만 예외 ---- */
   --shadow-lifted: 0 12px 24px -8px color-mix(in srgb, var(--color-ink) 28%, transparent);
 
   /* ---- component sizes ---- */
   --size-topbar: 3.25rem;
-  --size-btn-xl: 3.5rem;
-  --size-btn-lg: 3rem;
-  --size-btn-md: 2.5rem;
-  --size-btn-sm: 2rem;
+  --size-btn-lg: 2.75rem; /* 44 — v3: CTA, 이전 xl(56)을 대체 */
+  --size-btn-md: 2.25rem; /* 36 — v3: 이전 40에서 축소 */
+  --size-btn-sm: 2rem; /* 32 — 변경 없음 */
+  --size-btn-pad-lg: 1rem; /* 16 */
+  --size-btn-pad-md: 0.875rem; /* 14 */
+  --size-btn-pad-sm: 0.75rem; /* 12 */
+  --size-btn-min: 10rem; /* 160 — 하단 바 단일 버튼의 최소 폭(스펙 §2 "하단 바") */
   --size-segment-track: 2.5rem;
   --size-card-max: 22.5rem;
-  --size-grid-gap: 0.75rem; /* "카테고리" 보기 12px */
-  --size-grid-gap-all: 0.5rem; /* "전체" 보기 8px */
+  --size-grid-gap: 0.75rem; /* "카테고리" 보기(단일 필터) 12px */
+  --size-grid-gap-all: 0.5rem; /* "전체" 보기(구간별) 8px */
+  --size-section-gap: 2rem; /* 32 — 구간 사이 간격 */
   --size-touch-min: 2.75rem;
-  --size-input-table: 4.5rem;
+  --size-input-table: 3.25rem; /* 52 — v3: 72에서 축소 */
+  --size-input-table-max: 15rem; /* 240 */
   --size-cta-fade: 1.75rem;
+  --size-card-frame-inset: 0.375rem; /* 6 — 카드 변형 A 안쪽 프레임 들임 */
+  --size-card-tick: 0.5rem; /* 8 — 카드 변형 B 모서리 틱 길이 */
+  --size-card-line: 1rem; /* 16 — 카드 변형 A 번호 아래 짧은 가로선 */
+  --size-card-number-gap: 0.75rem; /* 12 — 번호와 그 아래 가로선 사이 */
 
   /* ---- layout ---- */
   --container-app: 430px;
