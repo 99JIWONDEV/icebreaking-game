@@ -101,12 +101,11 @@ export function OpenCardOverlay({
             layout
             transition={reduced ? { duration: 0.15 } : cardMoveSpring}
             className="relative w-full"
-            style={{ maxWidth: "var(--size-card-max)", perspective: 1200 }}
+            style={{ maxWidth: "var(--size-card-max)", aspectRatio: "3 / 4.2", perspective: 1200 }}
           >
             <motion.div
-              className="relative w-full"
+              className="relative h-full w-full"
               style={{
-                aspectRatio: "3 / 4.2",
                 transformStyle: "preserve-3d",
                 borderRadius: "var(--radius-card)",
                 boxShadow: "var(--shadow-lifted)",
