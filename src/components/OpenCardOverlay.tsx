@@ -10,6 +10,7 @@ import { MIN_OPEN_MS } from "@/lib/config";
 import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, shineV1Transition, shineV4Transition, textRevealDelayMs } from "@/lib/motion";
 import { questionIndex, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { useShineQueryOverride } from "@/lib/shineQueryOverride";
 import { useShineVariant } from "@/lib/shineVariant";
 
 export function OpenCardOverlay({
@@ -26,7 +27,12 @@ export function OpenCardOverlay({
 }) {
   const reduced = useReducedMotion();
   const playIntro = animate && !reduced;
-  const shineVariant = useShineVariant();
+  const storedShineVariant = useShineVariant();
+  // 11 §B-3: ?shine=off|v1|v4가 있으면 저장된(/dev) 선택보다 우선한다 — 저장하지 않고
+  // 이번 로드에만 적용된다.
+  const shineQueryOverride = useShineQueryOverride();
+  const shineVariant = shineQueryOverride === "v1" || shineQueryOverride === "v4" ? shineQueryOverride : storedShineVariant;
+  const shineOff = shineQueryOverride === "off";
   const [textRevealed, setTextRevealed] = useState(!playIntro);
   const [ready, setReady] = useState(false);
   const [shineDone, setShineDone] = useState(!playIntro);
@@ -145,10 +151,11 @@ export function OpenCardOverlay({
                 {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 v4)로 전환 — v1은 Step 1/2
                     원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번(와이프+띠, 같은
                     타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서 뺀다(shineDone).
-                    일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를 거치므로 효과가 동일하다. */}
-                {playIntro && !shineDone && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
+                    일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를 거치므로 효과가 동일하다.
+                    11 §B-3: ?shine=off면 전혀 렌더하지 않는다(원인 격리용 임시 토글). */}
+                {playIntro && !shineDone && !shineOff && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
               </div>
-              {playIntro && !shineDone && shineVariant === "v4" && <CardShineV4Glow />}
+              {playIntro && !shineDone && !shineOff && shineVariant === "v4" && <CardShineV4Glow />}
             </motion.div>
           </motion.div>
         </div>

@@ -15,6 +15,7 @@ export function CardShineV1() {
   return (
     <motion.div
       aria-hidden
+      data-shine="v1"
       className="pointer-events-none absolute inset-y-0 w-1/3"
       style={{
         background:
@@ -39,7 +40,7 @@ export function CardShineV4Sweep() {
   const sharedAnimate = { initial: { x: "-170%", y: "-220%" }, animate: { x: "170%", y: "220%" }, transition: shineV4Transition };
   return (
     <>
-      <motion.div aria-hidden className="pointer-events-none absolute inset-0" {...sharedAnimate}>
+      <motion.div aria-hidden data-shine="sweep-cover" className="pointer-events-none absolute inset-0" {...sharedAnimate}>
         <div
           style={{
             position: "absolute",
@@ -57,7 +58,7 @@ export function CardShineV4Sweep() {
           }}
         />
       </motion.div>
-      <motion.div aria-hidden className="pointer-events-none absolute inset-0" {...sharedAnimate}>
+      <motion.div aria-hidden data-shine="sweep-band" className="pointer-events-none absolute inset-0" {...sharedAnimate}>
         <div
           style={{
             position: "absolute",
@@ -94,6 +95,7 @@ export function CardShineV4Glow() {
   return (
     <motion.div
       aria-hidden
+      data-shine="glow"
       className="pointer-events-none absolute inset-0"
       style={{
         backfaceVisibility: "hidden",
