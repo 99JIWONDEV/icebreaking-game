@@ -23,6 +23,9 @@ export const intro = {
 };
 
 export const tableEntry = {
+  // v3에서 화면에 보이는 큰 제목은 지웠지만(라벨과 중복), 접근성 트리에는 페이지
+  // 제목(h1)이 하나 있어야 한다(axe-core page-has-heading-one) — sr-only로만 쓴다.
+  title: { ko: "테이블 번호를 알려 주세요", en: "What's your table number?" },
   join: { ko: "입장하기", en: "Join" },
   error: (max: number) => ({
     ko: `1~${max} 사이로 입력해 주세요`,
@@ -52,11 +55,14 @@ export const progress = (used: number, total: number) => ({
 export const drawRandom = { ko: "랜덤으로 뽑기", en: "Draw at random" };
 
 export const cardBack = {
-  closed: (n: number, category: { ko: string; en: string }) => ({
+  // n은 CardBackFace에 보이는 두 자리 문자열("01")과 똑같이 맞춘다 — axe-core의
+  // label-content-name-mismatch(WCAG 2.5.3): 보이는 텍스트가 접근성 이름에 그대로
+  // 들어 있어야 한다(예전엔 "1번"이라 "01"을 포함하지 않아 위반이었다).
+  closed: (n: string, category: { ko: string; en: string }) => ({
     ko: `${n}번 카드, ${category.ko}`,
     en: `Card ${n}, ${category.en}`,
   }),
-  used: (n: number, category: { ko: string; en: string }) => ({
+  used: (n: string, category: { ko: string; en: string }) => ({
     ko: `${n}번 카드, ${category.ko} (사용함)`,
     en: `Card ${n}, ${category.en} (used)`,
   }),

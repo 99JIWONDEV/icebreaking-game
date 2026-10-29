@@ -22,7 +22,7 @@ export function CardBack({
   onOpen: () => void;
 }) {
   const mode = useViewStore((state) => state.mode);
-  const number = questionIndex(question);
+  const number = String(questionIndex(question)).padStart(2, "0");
   const category = categoryOf(question);
   const label = used ? cardBack.used(number, category) : cardBack.closed(number, category);
 

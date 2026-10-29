@@ -29,8 +29,9 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
       className="flex min-h-dvh flex-col bg-canvas px-5"
       style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: bottomBarClearance(1) }}
     >
-      {/* v3 §3: 화면 제목(이전 "테이블 번호를 알려 주세요")은 TableNumberInput의 라벨과
-          중복이라 지웠다 — 라벨 하나만 남긴다. */}
+      {/* v3 §3: 화면에 보이는 큰 제목은 TableNumberInput의 라벨과 중복이라 지웠다.
+          sr-only h1은 남긴다 — 페이지에 h1이 하나는 있어야 한다(axe-core 지적). */}
+      <h1 className="sr-only">{pick(mode, tableEntry.title.ko, tableEntry.title.en)}</h1>
       <div className="flex flex-1 flex-col justify-center">
         <TableNumberInput id={inputId} value={value} onChange={(v) => { setValue(v); setError(false); }} error={error} />
       </div>

@@ -37,27 +37,37 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // axe-core landmark-one-main/region: 앱 전체를 <main> 하나로 감싼다(여러 "페이지"가
+  // 전환되는 SPA라 각 단계 컴포넌트 안이 아니라 여기 한 곳에만 둔다).
   if (phase === "intro") {
-    return <Splash onDone={proceedPastIntro} />;
+    return (
+      <main>
+        <Splash onDone={proceedPastIntro} />
+      </main>
+    );
   }
 
   if (phase === "tableEntry" || !tableNumber) {
     return (
-      <TableEntry
-        onJoin={(n) => {
-          setTableNumber(n);
-          setPhase("main");
-        }}
-      />
+      <main>
+        <TableEntry
+          onJoin={(n) => {
+            setTableNumber(n);
+            setPhase("main");
+          }}
+        />
+      </main>
     );
   }
 
   return (
-    <MainScreen
-      tableNumber={tableNumber}
-      onChangeTable={(n) => {
-        setTableNumber(n);
-      }}
-    />
+    <main>
+      <MainScreen
+        tableNumber={tableNumber}
+        onChangeTable={(n) => {
+          setTableNumber(n);
+        }}
+      />
+    </main>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { setCardVariant, useCardVariant, type CardVariant } from "@/lib/cardVariant";
+import { setShineVariant, useShineVariant, type ShineVariant } from "@/lib/shineVariant";
 import { tableRepository } from "@/lib/table/LocalMockRepository";
 import { useTableState } from "@/lib/table/useTableState";
 import { questions } from "@/lib/questions";
@@ -10,11 +11,15 @@ export function DevPanel() {
   const [table, setTable] = useState(1);
   const { state, connection } = useTableState(table);
   const cardVariant = useCardVariant();
+  const shineVariant = useShineVariant();
 
-  // v3 §5: /dev?card=a|b로 카드 프레임 변형을 전환 — localStorage에 저장돼 메인 화면에도 적용된다.
+  // v3 §5 / 07 §1-3: /dev?card=a|b, /dev?shine=v1|v4 — localStorage에 저장돼 메인 화면에도 적용된다.
   useEffect(() => {
-    const param = new URLSearchParams(window.location.search).get("card");
-    if (param === "a" || param === "b") setCardVariant(param);
+    const params = new URLSearchParams(window.location.search);
+    const card = params.get("card");
+    if (card === "a" || card === "b") setCardVariant(card);
+    const shine = params.get("shine");
+    if (shine === "v1" || shine === "v4") setShineVariant(shine);
   }, []);
   const [cardNumber, setCardNumber] = useState("1");
   const [offline, setOffline] = useState(false);
@@ -131,6 +136,27 @@ export function DevPanel() {
               }}
             >
               변형 {v.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-label text-ink-sub">카드 오픈 광택 (07 §1 — ?shine=v1|v4로도 전환 가능)</h2>
+        <p className="text-label">현재: {shineVariant}</p>
+        <div className="flex gap-2">
+          {(["v1", "v4"] as ShineVariant[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setShineVariant(v)}
+              className="rounded border px-3 py-2"
+              style={{
+                borderColor: v === shineVariant ? "var(--color-ink)" : "var(--color-hairline)",
+                fontWeight: v === shineVariant ? 700 : 400,
+              }}
+            >
+              {v}
             </button>
           ))}
         </div>

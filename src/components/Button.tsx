@@ -69,6 +69,7 @@ export function Button({
       >
         <motion.span
           aria-hidden
+          tabIndex={-1}
           className="pointer-events-none absolute inset-0 bg-black"
           initial={{ opacity: 0 }}
           whileTap={!inert ? { opacity: 0.12 } : undefined}

@@ -3,12 +3,14 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { CardBackFace } from "@/components/CardBackFace";
+import { CardShineV1, CardShineV4Glints, CardShineV4Glow, CardShineV4Sweep } from "@/components/CardShine";
 import { CloseButtonRing } from "@/components/CloseButtonRing";
 import { QuestionCard } from "@/components/QuestionCard";
 import { MIN_OPEN_MS } from "@/lib/config";
-import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, shineTransition, textRevealDelayMs } from "@/lib/motion";
+import { cardCloseFlipTransition, cardFlipTransition, cardMoveSpring, shineV1Transition, shineV4Transition, textRevealDelayMs } from "@/lib/motion";
 import { questionIndex, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { useShineVariant } from "@/lib/shineVariant";
 
 export function OpenCardOverlay({
   question,
@@ -24,8 +26,10 @@ export function OpenCardOverlay({
 }) {
   const reduced = useReducedMotion();
   const playIntro = animate && !reduced;
+  const shineVariant = useShineVariant();
   const [textRevealed, setTextRevealed] = useState(!playIntro);
   const [ready, setReady] = useState(false);
+  const [shineDone, setShineDone] = useState(!playIntro);
   const titleId = useId();
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -48,6 +52,15 @@ export function OpenCardOverlay({
     const t = setTimeout(() => setTextRevealed(true), textRevealDelayMs);
     return () => clearTimeout(t);
   }, [playIntro]);
+
+  // 07 §1-2: 광택 효과는 끝나면 DOM에서 제거한다 — 끝나는 시점은 버전별 transition에서 계산한다.
+  useEffect(() => {
+    if (!playIntro) return;
+    const t = shineVariant === "v1" ? shineV1Transition : shineV4Transition;
+    const ms = (t.delay + t.duration) * 1000 + 50; // 글린트 꼬리(v4)까지 여유 50ms
+    const timer = setTimeout(() => setShineDone(true), ms);
+    return () => clearTimeout(timer);
+  }, [playIntro, shineVariant]);
 
   useEffect(() => {
     const remaining = Math.max(0, MIN_OPEN_MS - (Date.now() - openedAt));
@@ -129,27 +142,18 @@ export function OpenCardOverlay({
                 }}
               >
                 <QuestionCard question={question} revealed={textRevealed} />
-                {playIntro && (
-                  // 디자인 v3 후속 §3: Step 1/2 원본 스윕(git show c5c2fa4) 기하를 그대로
-                  // 복원했다 — 각도 100deg, 폭 1/3, 0.85s 지연/0.9s 지속/easeInOut 전부 원본.
-                  // 원본은 당시 카드 면(#FAF6EE, 크림색) 위에 흰 35% 그라디언트라 보였지만,
-                  // 지금 카드 면은 #FFFFFF라 흰색은 원리상 안 보인다(흰 위에 흰은 불투명도와
-                  // 무관하게 흰으로 합성된다). 색만 하나의 부드러운 ink 톤 피크로 바꿨다 —
-                  // 이전 시도(5% 가장자리 두 줄)는 "어둡다"는 피드백을 받아, 더 옅고(4%) 가장자리
-                  // 둘이 아니라 가운데 하나의 완만한 산 모양으로 바꿔 더 밝게 보이게 했다.
-                  <motion.div
-                    aria-hidden
-                    className="pointer-events-none absolute inset-y-0 w-1/3"
-                    style={{
-                      background:
-                        "linear-gradient(100deg, transparent, color-mix(in srgb, var(--color-ink) 7%, transparent), transparent)",
-                    }}
-                    initial={{ left: "-40%" }}
-                    animate={{ left: "110%" }}
-                    transition={shineTransition}
-                  />
-                )}
+                {/* 07 §1: /dev?shine=v1|v4(기본 v4)로 전환 — v1은 Step 1/2 원본 기하 복원,
+                    v4는 왼쪽 위→오른쪽 아래 대각선 + 와이프 + 글로우 + 글린트. 끝나면
+                    DOM에서 뺀다(shineDone). 일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로
+                    하나를 거치므로 효과가 동일하다. */}
+                {playIntro && !shineDone && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
               </div>
+              {playIntro && !shineDone && shineVariant === "v4" && (
+                <>
+                  <CardShineV4Glow />
+                  <CardShineV4Glints />
+                </>
+              )}
             </motion.div>
           </motion.div>
         </div>

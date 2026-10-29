@@ -67,6 +67,13 @@ export function MenuDrawer({
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-scrim" />
         <Drawer.Content
+          // 07 §2-5: 닫을 때 포커스가 메뉴 버튼으로 돌아와야 한다 — Radix 기본 복귀가
+          // 왜인지 안 돼서(Playwright로 확인, body로 감) 직접 처리한다. vaul의 Content는
+          // onCloseAutoFocus를 안 가로채고 그대로 Radix Dialog.Content에 넘긴다.
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            document.querySelector<HTMLElement>("[data-menu-trigger]")?.focus();
+          }}
           className="fixed inset-y-0 left-0 z-50 flex h-full w-[86%] flex-col bg-paper outline-none"
           style={{ maxWidth: "20rem", borderRight: "1px solid var(--color-hairline)" }}
         >
