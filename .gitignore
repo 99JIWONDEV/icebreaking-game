@@ -46,3 +46,10 @@ next-env.d.ts
 
 # design review screenshots
 /.review/
+
+# AI 도구 설정/지시서 — 로컬에는 남기되 공개 저장소엔 올리지 않는다 (08_github-push-prep-prompt.md)
+/CLAUDE.md
+/AGENTS.md
+/.claude/
+/.agents/
+/[0-9][0-9]_*.md
