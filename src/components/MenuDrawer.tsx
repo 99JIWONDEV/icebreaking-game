@@ -1,13 +1,15 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { motion } from "motion/react";
 import { Drawer } from "vaul";
 import { Button } from "@/components/Button";
 import { LanguageSegment } from "@/components/LanguageSegment";
 import { TableNumberInput } from "@/components/TableNumberInput";
 import { TABLE_COUNT } from "@/lib/config";
-import { menu, pick } from "@/lib/i18n";
+import { menu, pick, tableEntry, tableNumberHintRanged, tableNumberLabel } from "@/lib/i18n";
 import { categories } from "@/lib/questions";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useViewStore } from "@/store/useViewStore";
 
 export function MenuDrawer({
@@ -26,33 +28,68 @@ export function MenuDrawer({
   const mode = useViewStore((state) => state.mode);
   const category = useViewStore((state) => state.category);
   const setCategory = useViewStore((state) => state.setCategory);
-  const [changingTable, setChangingTable] = useState(false);
+  const reduced = useReducedMotion();
+  // 09 §2: 기존엔 changingTable(입력) → confirmingTable(재확인) 2단계였는데, 한 단계로
+  // 합쳤다 — 입력 + 취소/확인 버튼 한 줄, 별도 재확인 화면 없음.
+  const [editingTable, setEditingTable] = useState(false);
   const [draftTable, setDraftTable] = useState("");
-  const [confirmingTable, setConfirmingTable] = useState<number | null>(null);
   const [tableError, setTableError] = useState(false);
   const draftInputId = useId();
+  const draftErrorId = `${draftInputId}-help`;
+  const changeTableBtnRef = useRef<HTMLButtonElement>(null);
+  const wasEditingRef = useRef(false);
+
+  // 취소/ESC로 기본 상태로 돌아갈 때 포커스를 "테이블 변경" 버튼으로 돌린다 — 버튼은
+  // editingTable이 false로 바뀐 뒤에야 DOM에 다시 생기므로 핸들러 안에서 바로 focus()할
+  // 수 없다(아직 마운트 전). prop 변화가 아니라 사용자 액션에 대한 반응이라 동기 setState는
+  // 없고 DOM 포커스 이동만 하므로 effect 규칙에 어긋나지 않는다.
+  useEffect(() => {
+    if (wasEditingRef.current && !editingTable) {
+      changeTableBtnRef.current?.focus();
+    }
+    wasEditingRef.current = editingTable;
+  }, [editingTable]);
 
   function startChangeTable() {
-    setChangingTable(true);
+    setEditingTable(true);
     setDraftTable("");
     setTableError(false);
   }
 
-  function submitDraftTable() {
+  function cancelChangeTable() {
+    setEditingTable(false);
+    setDraftTable("");
+    setTableError(false);
+  }
+
+  function confirmChangeTable() {
     const n = Number(draftTable);
     if (!Number.isInteger(n) || n < 1 || n > TABLE_COUNT) {
       setTableError(true);
       return;
     }
-    setConfirmingTable(n);
+    if (n !== tableNumber) {
+      onChangeTable(n);
+      onOpenChange(false);
+    }
+    setEditingTable(false);
+    setDraftTable("");
+    setTableError(false);
   }
 
-  function confirmChangeTable() {
-    if (confirmingTable === null) return;
-    onChangeTable(confirmingTable);
-    setConfirmingTable(null);
-    setChangingTable(false);
-    onOpenChange(false);
+  function handleDraftKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      confirmChangeTable();
+    } else if (e.key === "Escape") {
+      // vaul/Radix Dialog도 document 레벨에서 Escape를 들어서 드로어 전체를 닫는다 —
+      // preventDefault만으로는 안 막혀서(Playwright 키보드 테스트로 확인: 드로어가
+      // 같이 닫혀버림) stopPropagation도 같이 호출해 이벤트가 더 올라가지 않게 한다.
+      // 편집 블록만 취소되고 드로어는 열린 채로 남아야 한다(09 §2).
+      e.preventDefault();
+      e.stopPropagation();
+      cancelChangeTable();
+    }
   }
 
   const categoryOptions = [{ id: "all", ko: menu.all.ko, en: menu.all.en }, ...categories];
@@ -73,6 +110,18 @@ export function MenuDrawer({
           onCloseAutoFocus={(e) => {
             e.preventDefault();
             document.querySelector<HTMLElement>("[data-menu-trigger]")?.focus();
+          }}
+          // 09 §2: 편집 중 Escape는 편집만 취소해야 한다(드로어 전체가 닫히면 안 됨).
+          // Radix의 Escape-닫기는 document에 캡처 단계로 붙어 있어서 입력의 onKeyDown에서
+          // preventDefault/stopPropagation을 해도 막히지 않는다(Playwright로 확인 —
+          // 캡처는 document→target 순서라 target의 핸들러보다 먼저 실행된다). vaul의
+          // Drawer.Content가 그대로 넘겨주는 onEscapeKeyDown(Radix 쪽 공식 훅)에서 막아야
+          // 한다.
+          onEscapeKeyDown={(e) => {
+            if (editingTable) {
+              e.preventDefault();
+              cancelChangeTable();
+            }
           }}
           className="fixed inset-y-0 left-0 z-50 flex h-full w-[86%] flex-col bg-paper outline-none"
           style={{ maxWidth: "20rem", borderRight: "1px solid var(--color-hairline)" }}
@@ -125,47 +174,77 @@ export function MenuDrawer({
                 이미 ~18px 내부 여백이 있다(실측, .review/menu_precise.mjs) — 그만큼 margin-top을
                 줄여서 보정한다. 구분선 아래는 라벨 자체 line-height 여백(~1px)만 있던 걸
                 padding-top으로 채워 20px로 맞춘다. */}
-            <section
+            {/* 09 §2 "기본 상태 = 건드리지 않는다": 섹션 라벨, {n}번 테이블 텍스트,
+                "테이블 변경" 버튼의 크기/패딩/radius/테두리/글자/색/위치/간격은 그대로다.
+                "테이블 변경"을 누르면 그 버튼이 있던 자리만 편집 블록으로 바뀐다. */}
+            <motion.section
+              layout
+              transition={reduced ? { duration: 0 } : { duration: 0.15 }}
               className="flex flex-col gap-3 px-5 pb-5"
               style={{ marginTop: "0.125rem", borderTop: "1px solid var(--color-hairline)", paddingTop: "1.1875rem" }}
             >
               <h3 className="text-label text-ink-sub">{pick(mode, menu.table.ko, menu.table.en)}</h3>
-              {!changingTable ? (
-                <div className="flex flex-col items-start gap-2">
-                  <span className="text-body text-ink">{pick(mode, `${tableNumber}번 테이블`, `Table ${tableNumber}`)}</span>
-                  <Button onClick={startChangeTable} size="sm" variant="outline">
-                    {pick(mode, menu.changeTable.ko, menu.changeTable.en)}
-                  </Button>
-                </div>
-              ) : confirmingTable !== null ? (
-                <div className="flex flex-col gap-3">
-                  <p className="text-body text-ink">{pick(mode, menu.confirmTable(confirmingTable).ko, menu.confirmTable(confirmingTable).en)}</p>
-                  <div className="flex gap-2">
-                    <Button onClick={() => setConfirmingTable(null)} size="lg" variant="outline">
-                      {pick(mode, menu.cancel.ko, menu.cancel.en)}
-                    </Button>
-                    <Button onClick={confirmChangeTable} size="lg" variant="fill">
-                      {pick(mode, menu.confirm.ko, menu.confirm.en)}
+              {/* 기존 구조 그대로: span→기본 버튼은 8px(gap-2) — section의 gap-3(12px)을
+                  그대로 쓰면 간격이 바뀌므로 이 안쪽 래퍼는 자체 gap을 쓰지 않는다. 편집
+                  블록은 09 §2대로 span 아래 12px(mt-3)을 따로 준다. */}
+              <div className="flex w-full flex-col items-start">
+                <span className="text-body text-ink">{pick(mode, `${tableNumber}번 테이블`, `Table ${tableNumber}`)}</span>
+                {!editingTable ? (
+                  <div className="mt-2">
+                    <Button ref={changeTableBtnRef} onClick={startChangeTable} size="sm" variant="outline">
+                      {pick(mode, menu.changeTable.ko, menu.changeTable.en)}
                     </Button>
                   </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-start gap-3">
-                  <TableNumberInput
-                    id={draftInputId}
-                    value={draftTable}
-                    onChange={(v) => {
-                      setDraftTable(v);
-                      setTableError(false);
-                    }}
-                    error={tableError}
-                  />
-                  <Button onClick={submitDraftTable} size="lg" variant="fill">
-                    {pick(mode, menu.confirm.ko, menu.confirm.en)}
-                  </Button>
-                </div>
-              )}
-            </section>
+                ) : (
+                  <div
+                    role="group"
+                    aria-label={pick(mode, menu.changeTableGroupLabel.ko, menu.changeTableGroupLabel.en)}
+                    className="mt-3 flex w-full flex-col"
+                  >
+                    <TableNumberInput
+                      id={draftInputId}
+                      value={draftTable}
+                      onChange={(v) => {
+                        setDraftTable(v);
+                        setTableError(false);
+                      }}
+                      error={tableError}
+                      autoFocus
+                      ariaLabel={pick(mode, tableNumberLabel.ko, tableNumberLabel.en)}
+                      ariaDescribedBy={draftErrorId}
+                      onKeyDown={handleDraftKeyDown}
+                    />
+                    {tableError ? (
+                      <p
+                        id={draftErrorId}
+                        className="mt-2 flex items-center justify-center gap-1 text-center text-label"
+                        style={{ color: "var(--color-danger)" }}
+                        aria-live="polite"
+                      >
+                        <svg aria-hidden width="14" height="14" viewBox="0 0 14 14" fill="none">
+                          <circle cx="7" cy="7" r="6.25" stroke="currentColor" strokeWidth="1.5" />
+                          <path d="M7 4v3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <circle cx="7" cy="9.75" r="0.75" fill="currentColor" />
+                        </svg>
+                        {pick(mode, tableEntry.error(TABLE_COUNT).ko, tableEntry.error(TABLE_COUNT).en)}
+                      </p>
+                    ) : (
+                      <p id={draftErrorId} className="mt-2 text-center text-caption text-ink-sub">
+                        {pick(mode, tableNumberHintRanged(TABLE_COUNT).ko, tableNumberHintRanged(TABLE_COUNT).en)}
+                      </p>
+                    )}
+                    <div className="mt-5 flex justify-end gap-2">
+                      <Button onClick={cancelChangeTable} size="md" variant="weak">
+                        {pick(mode, menu.cancel.ko, menu.cancel.en)}
+                      </Button>
+                      <Button onClick={confirmChangeTable} size="md" variant="fill">
+                        {pick(mode, menu.confirm.ko, menu.confirm.en)}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.section>
 
             <section
               className="flex flex-col gap-2 px-5 pb-5"

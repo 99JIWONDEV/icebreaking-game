@@ -35,6 +35,11 @@ export const tableEntry = {
 
 export const tableNumberLabel = { ko: "테이블 번호", en: "Table number" };
 export const tableNumberPlaceholder = { ko: "예: 7", en: "e.g. 7" };
+// 09 §2: 메뉴의 인라인 편집은 별도 라벨 줄이 없어서, 힌트 자체에 입력 가능 범위를 덧붙인다.
+export const tableNumberHintRanged = (max: number) => ({
+  ko: `예: 7 (1~${max})`,
+  en: `e.g. 7 (1–${max})`,
+});
 
 export const topBar = {
   menuLabel: { ko: "메뉴 열기", en: "Open menu" },
@@ -81,7 +86,7 @@ export const menu = {
   all: { ko: "전체", en: "All" },
   table: { ko: "테이블", en: "Table" },
   changeTable: { ko: "테이블 변경", en: "Change table" },
-  confirmTable: (n: number) => ({ ko: `${n}번 테이블로 이동할까요?`, en: `Move to table ${n}?` }),
+  changeTableGroupLabel: { ko: "테이블 번호 변경", en: "Change table number" },
   confirm: { ko: "확인", en: "Confirm" },
   cancel: { ko: "취소", en: "Cancel" },
   language: { ko: "언어", en: "Language" },

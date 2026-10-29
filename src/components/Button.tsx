@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 import { motion } from "motion/react";
 
 export type ButtonSize = "lg" | "md" | "sm";
@@ -13,38 +13,59 @@ const SIZE: Record<ButtonSize, { height: string; paddingX: string; textClass: st
   sm: { height: "var(--size-btn-sm)", paddingX: "var(--size-btn-pad-sm)", textClass: "text-label" },
 };
 
-const VARIANT: Record<ButtonVariant, { background: string; color: string; border: string }> = {
-  fill: { background: "var(--color-ink)", color: "var(--color-on-ink)", border: "none" },
-  weak: { background: "var(--color-fill-weak)", color: "var(--color-ink)", border: "none" },
-  outline: { background: "transparent", color: "var(--color-ink)", border: "1px solid var(--color-line-strong)" },
+// 09 §3: pressed 색은 variant마다 다르다 — fill은 스펙이 정확한 hex(#2B2B28)를 줘서
+// 오버레이를 그 색으로 완전히 덮고(불투명도 1), weak/outline은 기존 검정 12% 오버레이를
+// 그대로 쓴다(변경 요청 없음 — 특히 outline은 "테이블 변경" 버튼이 쓰고 있어 건드리면 안 된다).
+const VARIANT: Record<
+  ButtonVariant,
+  { background: string; color: string; border: string; pressedOverlay: string; pressedOpacity: number }
+> = {
+  fill: {
+    background: "var(--color-ink-soft)",
+    color: "var(--color-on-ink)",
+    border: "none",
+    pressedOverlay: "var(--color-ink-soft-pressed)",
+    pressedOpacity: 1,
+  },
+  weak: {
+    background: "var(--color-fill-weak)",
+    color: "var(--color-ink)",
+    border: "none",
+    pressedOverlay: "black",
+    pressedOpacity: 0.12,
+  },
+  outline: {
+    background: "transparent",
+    color: "var(--color-ink)",
+    border: "1px solid var(--color-line-strong)",
+    pressedOverlay: "black",
+    pressedOpacity: 0.12,
+  },
 };
 
-export function Button({
-  children,
-  onClick,
-  type = "button",
-  size = "lg",
-  variant = "fill",
-  disabled,
-  loading,
-  ariaLabel,
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  type?: "button" | "submit";
-  size?: ButtonSize;
-  variant?: ButtonVariant;
-  disabled?: boolean;
-  loading?: boolean;
-  ariaLabel?: string;
-}) {
+export const Button = forwardRef<
+  HTMLButtonElement,
+  {
+    children: ReactNode;
+    onClick?: () => void;
+    type?: "button" | "submit";
+    size?: ButtonSize;
+    variant?: ButtonVariant;
+    disabled?: boolean;
+    loading?: boolean;
+    ariaLabel?: string;
+  }
+>(function Button(
+  { children, onClick, type = "button", size = "lg", variant = "fill", disabled, loading, ariaLabel },
+  ref,
+) {
   const s = SIZE[size];
   const v = VARIANT[variant];
   const inert = disabled || loading;
-  const expandHitArea = size === "sm" || size === "md";
 
   return (
     <motion.button
+      ref={ref}
       type={type}
       onClick={onClick}
       disabled={inert}
@@ -53,7 +74,8 @@ export function Button({
       whileTap={!inert ? { scale: 0.98 } : undefined}
       transition={{ duration: 0.12 }}
       // v3: 폭은 항상 내용+패딩(auto) — 전폭 버튼 금지, 두 줄로 꺾이지 않게 nowrap.
-      className={`relative inline-flex w-auto items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper ${expandHitArea ? "min-h-[var(--size-touch-min)]" : ""}`}
+      // v4: lg도 40px로 줄며 44px 미만이 됐다 — 전부 투명 히트 영역으로 44px 이상 확보.
+      className="relative inline-flex w-auto min-h-[var(--size-touch-min)] items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
       style={{ borderRadius: "var(--radius-btn)", opacity: disabled ? 0.4 : 1 }}
     >
       <span
@@ -70,9 +92,10 @@ export function Button({
         <motion.span
           aria-hidden
           tabIndex={-1}
-          className="pointer-events-none absolute inset-0 bg-black"
+          className="pointer-events-none absolute inset-0"
+          style={{ background: v.pressedOverlay }}
           initial={{ opacity: 0 }}
-          whileTap={!inert ? { opacity: 0.12 } : undefined}
+          whileTap={!inert ? { opacity: v.pressedOpacity } : undefined}
           transition={{ duration: 0.12 }}
         />
         <span className={`inline-flex items-center gap-1.5 whitespace-nowrap ${loading ? "opacity-0" : ""}`}>{children}</span>
@@ -80,7 +103,7 @@ export function Button({
       </span>
     </motion.button>
   );
-}
+});
 
 function LoadingDots({ color }: { color: string }) {
   return (

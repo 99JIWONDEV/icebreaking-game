@@ -57,7 +57,7 @@ export function OpenCardOverlay({
   useEffect(() => {
     if (!playIntro) return;
     const t = shineVariant === "v1" ? shineV1Transition : shineV4Transition;
-    const ms = (t.delay + t.duration) * 1000 + 50; // 글린트 꼬리(v4)까지 여유 50ms
+    const ms = (t.delay + t.duration) * 1000 + 50; // 애니메이션 꼬리까지 여유 50ms
     const timer = setTimeout(() => setShineDone(true), ms);
     return () => clearTimeout(timer);
   }, [playIntro, shineVariant]);

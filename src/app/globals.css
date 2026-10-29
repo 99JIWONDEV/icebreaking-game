@@ -15,6 +15,10 @@
   --color-canvas: #fafaf9;
   --color-paper: #ffffff;
   --color-ink: #171717;
+  /* v4: 주요 버튼 채움 전용 — 09 "검정이 너무 강하다" 피드백으로 순수 ink 대신 쓴다.
+     글자는 on-ink 흰색, 대비 11.4:1. ink 자체는 여전히 글자·포커스 링에 쓴다. */
+  --color-ink-soft: #3a3a37;
+  --color-ink-soft-pressed: #2b2b28;
   --color-ink-sub: #6b6b66;
   --color-hairline: #e4e4e0;
   --color-line-strong: #8c8c87;
@@ -49,6 +53,12 @@
   --text-question-en-both: 1.0625rem; /* 17 */
   --text-question-en-both--line-height: 1.625rem;
   --text-question-en-both--font-weight: 400;
+
+  /* v4: 테이블 번호 입력 라벨(09 §1) — 17 단계를 공유하지만 행간이 다르다(기존 영문
+     질문 토큰과 구분). */
+  --text-entry-label: 1.0625rem; /* 17 */
+  --text-entry-label--line-height: 1.5rem; /* 24 */
+  --text-entry-label--font-weight: 600;
 
   --text-intro-en: 0.9375rem; /* 15 */
   --text-intro-en--line-height: 1.375rem;
@@ -86,9 +96,9 @@
   --text-question-ko-solo--line-height: 3rem;
   --text-question-ko-solo--font-weight: 500;
 
-  /* v3: 입력창이 72→52px로 작아지며 숫자도 32→24로 내렸다(24는 단계에 없어 22로 스냅) */
-  --text-input-number: 1.375rem; /* 22 — 24 요청값의 가장 가까운 기존 단계 */
-  --text-input-number--line-height: 2rem;
+  /* v4: 밑줄 입력으로 바뀌며 09 스펙대로 28/36으로 다시 올렸다(v3의 22는 상자형 입력용) */
+  --text-input-number: 1.75rem; /* 28 */
+  --text-input-number--line-height: 2.25rem; /* 36 */
   --text-input-number--font-weight: 600;
 
   /* sm 버튼 글자는 text-label(13/18/600)과 동일해서 별도 토큰을 만들지 않고 재사용한다.
@@ -107,7 +117,7 @@
 
   /* ---- component sizes ---- */
   --size-topbar: 3.25rem;
-  --size-btn-lg: 2.75rem; /* 44 — v3: CTA, 이전 xl(56)을 대체 */
+  --size-btn-lg: 2.5rem; /* 40 — v4: 44에서 축소("검정이 너무 강하다"와 함께 받은 피드백) */
   --size-btn-md: 2.25rem; /* 36 — v3: 이전 40에서 축소 */
   --size-btn-sm: 2rem; /* 32 — 변경 없음 */
   --size-btn-pad-lg: 1rem; /* 16 */
@@ -120,7 +130,7 @@
   --size-grid-gap-all: 0.5rem; /* "전체" 보기(구간별) 8px */
   --size-section-gap: 2rem; /* 32 — 구간 사이 간격 */
   --size-touch-min: 2.75rem;
-  --size-input-table: 3.25rem; /* 52 — v3: 72에서 축소 */
+  --size-input-table: 3.5rem; /* 56 — v4: 밑줄 입력으로 바뀌며 52에서 다시 올림 */
   --size-input-table-max: 15rem; /* 240 */
   --size-cta-fade: 1.75rem;
   --size-card-frame-inset: 0.375rem; /* 6 — 카드 변형 A 안쪽 프레임 들임 */
@@ -155,4 +165,21 @@ html[data-intro="skip"] #intro-splash {
 /* 하단 고정 CTA 바 위, 격자가 버튼 뒤로 부드럽게 사라지는 가림막(장식 아님) */
 .cta-fade-mask {
   background: linear-gradient(to bottom, transparent, var(--color-canvas));
+}
+
+/* 09 §1: 테이블 번호 입력이 비어 있고 포커스가 없을 때 깜빡이는 커서 막대 — 포커스되면
+   네이티브 caret로 바뀐다(TableNumberInput.tsx). 장식이 아니라 "여기 입력하세요" 기능적
+   표시라 무한 반복 애니메이션 금지 규칙의 예외다. */
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.caret-blink {
+  animation: caret-blink 1.1s steps(1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .caret-blink {
+    animation: none;
+  }
 }
