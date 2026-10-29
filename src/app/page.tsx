@@ -5,6 +5,7 @@ import { MainScreen } from "@/components/MainScreen";
 import { hasSeenIntroRecently, Splash } from "@/components/Splash";
 import { TableEntry } from "@/components/TableEntry";
 import { TABLE_COUNT } from "@/lib/config";
+import { useVisualViewportVars } from "@/lib/useVisualViewportVars";
 import { useViewStore } from "@/store/useViewStore";
 
 type Phase = "intro" | "tableEntry" | "main";
@@ -18,6 +19,9 @@ function readTableFromUrl(): number | null {
 }
 
 export default function Home() {
+  // 10 §3-1: 앱 루트에서 한 번만 호출 — 드로어/하단 바가 쓰는 --vv-top/--vv-height/
+  // data-keyboard를 <html>에 설정한다.
+  useVisualViewportVars();
   const [phase, setPhase] = useState<Phase>("intro");
   const tableNumber = useViewStore((s) => s.tableNumber);
   const setTableNumber = useViewStore((s) => s.setTableNumber);

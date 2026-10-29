@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 /**
  * 09 §1/§2: 테이블 번호 밑줄 입력 — 입장 화면과 메뉴의 인라인 편집에서 공유한다(둘 다
@@ -29,20 +29,32 @@ export function TableNumberInput({
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }) {
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   // 값이 비어 있고 포커스가 없을 때만 커스텀 커서를 보여준다 — 포커스되면 네이티브
   // caret(caret-color: ink)로 넘어간다.
   const showCustomCursor = !focused && value === "";
 
+  // 10 §3-3: 네이티브 autoFocus 속성 대신 명시적으로 focus({ preventScroll: true })를
+  // 써서, 브라우저가 포커스하며 페이지를 멋대로 위로 스크롤하지 않게 한다.
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="relative w-full" style={{ height: "var(--size-input-table)" }}>
       <input
+        ref={inputRef}
         id={id}
         type="text"
         inputMode="numeric"
         pattern="[0-9]*"
         maxLength={3}
         autoComplete="off"
-        autoFocus={autoFocus}
+        autoCorrect="off"
+        autoCapitalize="off"
+        spellCheck={false}
+        name="table-number-not-autofillable"
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
         onFocus={() => setFocused(true)}

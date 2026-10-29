@@ -149,6 +149,36 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* 10 §3-2: iOS가 fixed 요소를 키보드 뒤로 밀어넣는 문제의 보강책 — body 자체는
+   여전히 평소대로 스크롤되고(overflow:hidden이 아니다), 가장자리에서 튕기는
+   바운스만 부모(브라우저 크롬)로 새지 않게 막는다. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
+/* 10 §3: useVisualViewportVars가 <html>에 --vv-top/--vv-height/data-keyboard를
+   설정한다. 드로어·하단 바는 이 변수들을 쓰고, 키보드가 열리면(data-keyboard="open")
+   safe-area 여백을 0으로 줄인다(iOS가 키보드 위에서도 safe-area-inset-bottom을
+   그대로 보고해서, 안 줄이면 불필요한 빈 공간이 생긴다). 미지원 브라우저/키보드
+   닫힘 상태에서는 전부 기존 값으로 폴백한다. */
+:root {
+  --drawer-bottom-pad: env(safe-area-inset-bottom);
+  --cta-bottom-pad: calc(1.5rem + env(safe-area-inset-bottom));
+  --entry-form-top: clamp(6rem, 22vh, 11.25rem);
+}
+:root[data-keyboard="open"] {
+  --drawer-bottom-pad: 0px;
+  --cta-bottom-pad: 0.75rem; /* 10 §3-4: 12px */
+  --entry-form-top: min(clamp(6rem, 22vh, 11.25rem), 8vh);
+}
+
+/* 10 §3-4: 키보드가 열려 있을 때 입장 화면 푸터는 공간이 없으면 숨긴다(입력창·버튼이
+   우선). 메인 화면 푸터에는 이 클래스를 안 써서 영향받지 않는다. */
+:root[data-keyboard="open"] .hide-on-keyboard {
+  display: none;
+}
+
 :lang(ko) {
   word-break: keep-all;
 }

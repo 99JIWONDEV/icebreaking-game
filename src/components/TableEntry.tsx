@@ -36,10 +36,10 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
           페이지에 h1이 하나는 있어야 한다(axe-core 지적). */}
       <h1 className="sr-only">{pick(mode, tableEntry.title.ko, tableEntry.title.en)}</h1>
 
-      {/* 09 §1: 더는 화면 가운데가 아니라 위쪽 3분의 1 지점에 고정한다. iOS 키보드(약
-          300px 가정)가 올라와도 입력이 가려지지 않는지는 실제 기기에서만 확인 가능 —
-          확인 필요. */}
-      <div className="flex flex-1 flex-col" style={{ paddingTop: "clamp(6rem, 22vh, 11.25rem)" }}>
+      {/* 09 §1: 더는 화면 가운데가 아니라 위쪽 3분의 1 지점에 고정한다. 10 §3-4: 키보드가
+          열리면 --entry-form-top이 min(clamp(…), 8vh)로 줄어든다(globals.css) — 입력이
+          덜 밀려서 스크롤 없이도 보일 가능성이 높아진다. 실기기 확인 필요. */}
+      <div className="flex flex-1 flex-col" style={{ paddingTop: "var(--entry-form-top)" }}>
         <div className="mx-auto flex w-full flex-col items-center" style={{ maxWidth: "min(240px, calc(100% - 2.5rem))" }}>
           <label htmlFor={inputId} className="text-center text-entry-label text-ink">
             {pick(mode, tableNumberLabel.ko, tableNumberLabel.en)}
@@ -72,7 +72,7 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
           )}
         </div>
       </div>
-      <Footer />
+      <Footer hideOnKeyboard />
 
       <BottomBar>
         <Button onClick={submit} size="lg" variant="fill">

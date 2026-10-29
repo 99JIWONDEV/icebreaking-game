@@ -37,7 +37,34 @@ export function MenuDrawer({
   const draftInputId = useId();
   const draftErrorId = `${draftInputId}-help`;
   const changeTableBtnRef = useRef<HTMLButtonElement>(null);
+  const editGroupRef = useRef<HTMLDivElement>(null);
   const wasEditingRef = useRef(false);
+
+  // 10 §3-3: 편집 블록(입력+힌트+취소/확인)이 키보드 위에서 가려지지 않게 scrollIntoView
+  // 한다. 처음엔 "250ms 타이머나 resize 중 먼저 오는 쪽에 한 번만"으로 짰는데, 키보드가
+  // 열리는 동안 resize가 여러 번(점점 줄어들며) 오는 실제 상황에서 250ms 타이머가 먼저
+  // 터져 "한 번"을 다 써버리면 — 그 뒤에 오는, 실제로 다 줄어든 뒤의 resize는 무시된다
+  // (Playwright로 뷰포트를 줄여 재현해서 발견: 편집 블록이 드로어 바깥에 남아 있었다).
+  // 그래서 debounce로 바꿨다 — resize가 올 때마다 250ms를 다시 재고, 250ms 동안 resize가
+  // 더 안 오면(키보드 애니메이션이 끝났다고 보고) 그때 딱 한 번 스크롤한다.
+  useEffect(() => {
+    if (!editingTable) return;
+    const el = editGroupRef.current;
+    if (!el) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const scrollOnce = () => el.scrollIntoView({ block: "nearest" });
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(scrollOnce, 250);
+    };
+    resetTimer();
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", resetTimer);
+    return () => {
+      clearTimeout(timer);
+      vv?.removeEventListener("resize", resetTimer);
+    };
+  }, [editingTable]);
 
   // 취소/ESC로 기본 상태로 돌아갈 때 포커스를 "테이블 변경" 버튼으로 돌린다 — 버튼은
   // editingTable이 false로 바뀐 뒤에야 DOM에 다시 생기므로 핸들러 안에서 바로 focus()할
@@ -102,7 +129,12 @@ export function MenuDrawer({
     // 열리면 포커스가 그 안으로 들어가야 한다)만 충족한다.
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction="left" autoFocus>
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-40 bg-scrim" />
+        {/* 10 §3-2: inset-0 대신 visualViewport 기준(top/height)으로 — iOS는 키보드가
+            열려도 레이아웃 뷰포트(inset-0의 기준)를 안 줄이고 비주얼 뷰포트만 줄인다. */}
+        <Drawer.Overlay
+          className="fixed inset-x-0 z-40 bg-scrim"
+          style={{ top: "var(--vv-top, 0px)", height: "var(--vv-height, 100dvh)" }}
+        />
         <Drawer.Content
           // 07 §2-5: 닫을 때 포커스가 메뉴 버튼으로 돌아와야 한다 — Radix 기본 복귀가
           // 왜인지 안 돼서(Playwright로 확인, body로 감) 직접 처리한다. vaul의 Content는
@@ -123,13 +155,28 @@ export function MenuDrawer({
               cancelChangeTable();
             }
           }}
-          className="fixed inset-y-0 left-0 z-50 flex h-full w-[86%] flex-col bg-paper outline-none"
-          style={{ maxWidth: "20rem", borderRight: "1px solid var(--color-hairline)" }}
+          className="fixed left-0 z-50 flex w-[86%] flex-col bg-paper outline-none"
+          style={{
+            top: "var(--vv-top, 0px)",
+            height: "var(--vv-height, 100dvh)",
+            maxWidth: "20rem",
+            borderRight: "1px solid var(--color-hairline)",
+          }}
         >
           <Drawer.Title className="sr-only">{pick(mode, menu.title.ko, menu.title.en)}</Drawer.Title>
+          {/* 10 §3-2: 키보드가 열려 드로어 높이가 줄어도 내용은 잘리지 않고 이 안에서
+              스크롤된다. overscroll-behavior: contain으로 끝까지 스크롤했을 때 뒤
+              페이지로 스크롤이 새지 않게(iOS 체이닝 방지), -webkit-overflow-scrolling
+              으로 관성 스크롤 유지. 아래쪽 safe-area 여백은 키보드가 열리면 0으로
+              줄어든다(--drawer-bottom-pad, globals.css). */}
           <div
             className="flex flex-1 flex-col overflow-y-auto"
-            style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
+            style={{
+              paddingTop: "env(safe-area-inset-top)",
+              paddingBottom: "var(--drawer-bottom-pad)",
+              overscrollBehavior: "contain",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
             <section className="flex flex-col px-5 pt-5">
               <h3 className="mb-1 text-label text-ink-sub">{pick(mode, menu.category.ko, menu.category.en)}</h3>
@@ -197,6 +244,7 @@ export function MenuDrawer({
                   </div>
                 ) : (
                   <div
+                    ref={editGroupRef}
                     role="group"
                     aria-label={pick(mode, menu.changeTableGroupLabel.ko, menu.changeTableGroupLabel.en)}
                     className="mt-3 flex w-full flex-col"
