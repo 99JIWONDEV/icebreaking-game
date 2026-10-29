@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "EM · KM 아이스브레이킹",
-  description: "EM·KM 합동 모임을 위한 아이스브레이킹 질문 카드",
+  description: "깊은 교제를 위한 질문 카드 — EM·KM 합동 모임용",
 };
 
 export const viewport: Viewport = {
