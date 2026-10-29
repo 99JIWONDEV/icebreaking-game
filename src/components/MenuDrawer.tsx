@@ -130,10 +130,14 @@ export function MenuDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange} direction="left" autoFocus>
       <Drawer.Portal>
         {/* 10 §3-2: inset-0 대신 visualViewport 기준(top/height)으로 — iOS는 키보드가
-            열려도 레이아웃 뷰포트(inset-0의 기준)를 안 줄이고 비주얼 뷰포트만 줄인다. */}
+            열려도 레이아웃 뷰포트(inset-0의 기준)를 안 줄이고 비주얼 뷰포트만 줄인다.
+            11 §A: height는 --vv-height가 아니라 --layout-h(레이아웃 뷰포트 높이) —
+            --vv-height로 두면 키보드 자동완성 막대 높이만큼 scrim이 못 미쳐서 그 틈으로
+            뒤 페이지가 비쳐 보였다(실기기에서 발견). 키보드 뒤까지 덮여도 어차피 안 보여서
+            무해하다. */}
         <Drawer.Overlay
           className="fixed inset-x-0 z-40 bg-scrim"
-          style={{ top: "var(--vv-top, 0px)", height: "var(--vv-height, 100dvh)" }}
+          style={{ top: "var(--vv-top, 0px)", height: "var(--layout-h, 100dvh)" }}
         />
         <Drawer.Content
           // 07 §2-5: 닫을 때 포커스가 메뉴 버튼으로 돌아와야 한다 — Radix 기본 복귀가
@@ -158,20 +162,26 @@ export function MenuDrawer({
           className="fixed left-0 z-50 flex w-[86%] flex-col bg-paper outline-none"
           style={{
             top: "var(--vv-top, 0px)",
-            height: "var(--vv-height, 100dvh)",
+            // 11 §A: 바깥 패널은 --layout-h(레이아웃 뷰포트 높이, 키보드가 열려도 안 줄어듦)
+            // 까지 흰 배경을 늘린다 — 안쪽 스크롤 영역(아래)만 --vv-height로 제한해서,
+            // 자동완성 막대가 뜨는 구간은 이 패널의 bg-paper가 그냥 흰 배경으로 채운다.
+            height: "var(--layout-h, 100dvh)",
             maxWidth: "20rem",
             borderRight: "1px solid var(--color-hairline)",
           }}
         >
           <Drawer.Title className="sr-only">{pick(mode, menu.title.ko, menu.title.en)}</Drawer.Title>
-          {/* 10 §3-2: 키보드가 열려 드로어 높이가 줄어도 내용은 잘리지 않고 이 안에서
-              스크롤된다. overscroll-behavior: contain으로 끝까지 스크롤했을 때 뒤
-              페이지로 스크롤이 새지 않게(iOS 체이닝 방지), -webkit-overflow-scrolling
-              으로 관성 스크롤 유지. 아래쪽 safe-area 여백은 키보드가 열리면 0으로
-              줄어든다(--drawer-bottom-pad, globals.css). */}
+          {/* 10 §3-2, 11 §A: 이 영역만 --vv-height(실제 보이는 비주얼 뷰포트 높이)로 제한해서
+              스크롤한다 — flex-1(부모 높이를 그대로 채움) 대신 명시적 높이를 줘서, 부모
+              패널(--layout-h, 더 큼)보다 짧게 남기고 그 아래는 패널 자체의 흰 배경이
+              보이게 한다. overscroll-behavior: contain으로 끝까지 스크롤했을 때 뒤 페이지로
+              스크롤이 새지 않게(iOS 체이닝 방지), -webkit-overflow-scrolling으로 관성 스크롤
+              유지. 아래쪽 safe-area 여백은 키보드가 열리면 0으로 줄어든다
+              (--drawer-bottom-pad, globals.css). */}
           <div
-            className="flex flex-1 flex-col overflow-y-auto"
+            className="flex flex-col overflow-y-auto"
             style={{
+              height: "var(--vv-height, 100dvh)",
               paddingTop: "env(safe-area-inset-top)",
               paddingBottom: "var(--drawer-bottom-pad)",
               overscrollBehavior: "contain",

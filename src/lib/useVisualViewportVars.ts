@@ -21,9 +21,16 @@ export function computeViewportVars(offsetTop: number, height: number, innerHeig
   };
 }
 
-/** 앱 루트에서 한 번만 호출한다(src/app/page.tsx) — `--vv-top`/`--vv-height`를
+/** 앱 루트에서 한 번만 호출한다(src/app/page.tsx) — `--vv-top`/`--vv-height`/`--layout-h`를
  *  <html>에 CSS 변수로, 키보드 열림 여부를 `data-keyboard`로 노출한다. 드로어/하단
- *  바가 이 값들을 기준으로 위치를 잡는다(10 §3). */
+ *  바가 이 값들을 기준으로 위치를 잡는다(10 §3, 11 §A).
+ *
+ *  11 §A: `--layout-h`(= `window.innerHeight`, 레이아웃 뷰포트 높이)도 같이 둔다 — iOS는
+ *  키보드가 열려도 이 값을 안 줄인다. `visualViewport.height`(`--vv-height`)는 키보드
+ *  **자동완성 막대까지** 가려서 실제보다 더 줄어든다 — 그 차이만큼 드로어 패널/scrim을
+ *  `--vv-height`로만 맞추면 자동완성 막대 높이만큼 뒤 페이지가 비쳐 보인다(실기기에서
+ *  발견). 패널/scrim은 `--layout-h`까지 늘리고, **스크롤되는 내용 영역만** `--vv-height`로
+ *  제한한다. */
 export function useVisualViewportVars() {
   useEffect(() => {
     const vv = window.visualViewport;
@@ -36,18 +43,22 @@ export function useVisualViewportVars() {
         const { vvTop, vvHeight, keyboard } = computeViewportVars(vv.offsetTop, vv.height, window.innerHeight);
         root.style.setProperty("--vv-top", `${vvTop}px`);
         root.style.setProperty("--vv-height", `${vvHeight}px`);
+        root.style.setProperty("--layout-h", `${window.innerHeight}px`);
         root.dataset.keyboard = keyboard;
       });
     };
     apply();
     vv.addEventListener("resize", apply);
     vv.addEventListener("scroll", apply);
+    window.addEventListener("resize", apply);
     return () => {
       cancelAnimationFrame(raf);
       vv.removeEventListener("resize", apply);
       vv.removeEventListener("scroll", apply);
+      window.removeEventListener("resize", apply);
       root.style.removeProperty("--vv-top");
       root.style.removeProperty("--vv-height");
+      root.style.removeProperty("--layout-h");
       delete root.dataset.keyboard;
     };
   }, []);
