@@ -38,12 +38,13 @@ export function OpenCardOverlay({
   // 12 §B-3: 실기기 이분 탐색용 임시 토글 — ?flip=fade|?layout=off|?scrim=off|
   // ?shadow=off|?fix=ios. 원인이 확정되면 debugToggles.ts와 이 호출부를 지운다.
   const toggles = useDebugToggles();
-  // 11 §B-3: ?shine=off|v1|v4가 있으면 저장된(/dev) 선택보다 우선한다 — 저장하지 않고
-  // 이번 로드에만 적용된다.
+  // 14 §B: 저장된(/dev) 선택의 기본값이 "off"로 바뀌었다(shineVariant.ts) — 쿼리가
+  // 없으면 이제 shine이 안 켜진다. 11 §B-3: ?shine=off|v1|v4가 있으면 저장된 선택보다
+  // 우선한다 — 저장하지 않고 이번 로드에만 적용된다.
   const storedShineVariant = useShineVariant();
   const shineQueryOverride = useShineQueryOverride();
-  const shineVariant = shineQueryOverride === "v1" || shineQueryOverride === "v4" ? shineQueryOverride : storedShineVariant;
-  const shineOff = shineQueryOverride === "off";
+  const shineVariant = shineQueryOverride ?? storedShineVariant;
+  const shineOff = shineVariant === "off";
   const [textRevealed, setTextRevealed] = useState(!playIntro);
   const [ready, setReady] = useState(false);
   const [shineDone, setShineDone] = useState(!playIntro);
@@ -70,14 +71,15 @@ export function OpenCardOverlay({
     return () => clearTimeout(t);
   }, [playIntro]);
 
-  // 07 §1-2: 광택 효과는 끝나면 DOM에서 제거한다 — 끝나는 시점은 버전별 transition에서 계산한다.
+  // 07 §1-2: 광택 효과는 끝나면 DOM에서 제거한다 — 끝나는 시점은 버전별 transition에서
+  // 계산한다. 14 §B: shineOff면 애초에 렌더되지 않으니 타이머를 돌릴 필요가 없다.
   useEffect(() => {
-    if (!playIntro) return;
+    if (!playIntro || shineOff) return;
     const t = shineVariant === "v1" ? shineV1Transition : shineV4Transition;
     const ms = (t.delay + t.duration) * 1000 + 50; // 애니메이션 꼬리까지 여유 50ms
     const timer = setTimeout(() => setShineDone(true), ms);
     return () => clearTimeout(timer);
-  }, [playIntro, shineVariant]);
+  }, [playIntro, shineOff, shineVariant]);
 
   useEffect(() => {
     const remaining = Math.max(0, MIN_OPEN_MS - (Date.now() - openedAt));
@@ -242,7 +244,7 @@ export function OpenCardOverlay({
                     끼지 않게 하는 예방 조치(13번에서 확인한 isolation 문제와 같은 종류). */}
                 <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
                   <QuestionCard question={question} revealed={textRevealed} />
-                  {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 v4)로 전환 —
+                  {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 꺼짐, 14 §B)로 전환 —
                       v1은 Step 1/2 원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번
                       (와이프+띠, 같은 타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서
                       뺀다(shineDone). 일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를

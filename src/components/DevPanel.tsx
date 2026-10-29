@@ -13,13 +13,14 @@ export function DevPanel() {
   const cardVariant = useCardVariant();
   const shineVariant = useShineVariant();
 
-  // v3 §5 / 07 §1-3: /dev?card=a|b, /dev?shine=v1|v4 — localStorage에 저장돼 메인 화면에도 적용된다.
+  // v3 §5 / 07 §1-3: /dev?card=a|b, /dev?shine=off|v1|v4 — localStorage에 저장돼 메인
+  // 화면에도 적용된다. 14 §B: 기본값이 off로 바뀌어서 off도 명시적으로 고를 수 있어야 한다.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const card = params.get("card");
     if (card === "a" || card === "b") setCardVariant(card);
     const shine = params.get("shine");
-    if (shine === "v1" || shine === "v4") setShineVariant(shine);
+    if (shine === "off" || shine === "v1" || shine === "v4") setShineVariant(shine);
   }, []);
   const [cardNumber, setCardNumber] = useState("1");
   const [offline, setOffline] = useState(false);
@@ -142,10 +143,10 @@ export function DevPanel() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-label text-ink-sub">카드 오픈 광택 (07 §1 — ?shine=v1|v4로도 전환 가능)</h2>
+        <h2 className="text-label text-ink-sub">카드 오픈 광택 (14 §B — 기본 off, ?shine=off|v1|v4로 전환 가능)</h2>
         <p className="text-label">현재: {shineVariant}</p>
         <div className="flex gap-2">
-          {(["v1", "v4"] as ShineVariant[]).map((v) => (
+          {(["off", "v1", "v4"] as ShineVariant[]).map((v) => (
             <button
               key={v}
               type="button"
