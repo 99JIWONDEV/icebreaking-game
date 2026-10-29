@@ -327,6 +327,30 @@ pattern)에 맞게 켜 두되, 마우스/터치로 연 경우엔 `:focus-visible
 뒤집기/덮기, 격자 stagger, 랜덤 뽑기 서스펜스 전부 그대로 — 서스펜스가 훑는 순서만
 테이블 셔플 대신 번호 순서로 바뀌었다(아래 "시드 셔플 제거" 참고, 타이밍 상수는 무관).
 
+### 카드 뒤집기 — 면 가시성 (14 §A) — `src/components/OpenCardOverlay.tsx`
+
+번호 면/질문 면을 숨기고 보이는 걸 **`backface-visibility: hidden` 하나에만
+기대지 않는다.** 실기기(iPhone, 시크릿 Chrome)에서 카드를 뒤집는 동안 뒤쪽에
+있어야 할 면이 거울상으로 비치는 증상이 났다 — 13번에서 고친 `isolation`
+문제와는 별개로, Mac의 Chromium/WebKit에서는 재현되지 않는 iOS WebKit 전용
+불안정성으로 보인다(`backface-visibility`가 자식의 다른 합성 조건과 만나면
+무시/불안정해지는 사례가 알려져 있다).
+
+대신 회전 각도(`rotateY`)를 `useMotionValue`로 직접 들고, 두 면의 `opacity`를
+`useTransform`으로 **그 값에서 파생**시킨다 — 번호 면은 각도 < 90°, 질문 면은
+각도 ≥ 90°일 때만 보인다. 같은 모션 값을 변경하는 거라 **같은 프레임에** 전환되고
+(시간 기반 keyframe 근사가 아니다 — easing 때문에 중간 시점 각도가 정확히 90°가
+아니다), 열기·닫기 양방향 다 똑같이 동작한다. 기존 `backface-visibility: hidden`
+(+ `-webkit-` 접두어, `?fix=ios` 토글)은 보조로 남겼다 — 제거하지 않았다.
+질문 면의 `overflow: hidden` + `border-radius`도 면 자신이 아니라 안쪽 래퍼로
+옮겼다(preserve-3d 요소의 직계 자식에 그룹화 속성이 끼지 않게, 13번과 같은
+예방 조치). `?flip=fade` 토글은 원래 회전을 안 쓰므로 이 로직에서 제외된다.
+
+`scripts/flip-visibility-regression.ts`가 프레임 단위로(16~33ms 간격) 각도와 두
+면의 opacity를 같이 기록해서 "각도에 안 맞는 면 노출"이 0인지 검증한다 —
+`backface-visibility`를 `visible !important`로 강제 무력화한 상태로도 같은
+검증을 반복해서, 이 속성에 실제로 의존하지 않는지 확인한다.
+
 ### 카드 오픈 광택 — `src/components/CardShine.tsx`
 
 카드가 뒤집혀 자리 잡는 순간 한 번 재생되는 연출. 세 번 바뀌었다:

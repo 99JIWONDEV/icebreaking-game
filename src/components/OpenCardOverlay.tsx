@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { motion } from "motion/react";
+import { motion, useMotionValue, useTransform } from "motion/react";
 import { CardBackFace } from "@/components/CardBackFace";
 import { CardShineV1, CardShineV4Glow, CardShineV4Sweep } from "@/components/CardShine";
 import { CloseButtonRing } from "@/components/CloseButtonRing";
@@ -13,6 +13,13 @@ import { questionIndex, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useShineQueryOverride } from "@/lib/shineQueryOverride";
 import { useShineVariant } from "@/lib/shineVariant";
+
+// 14 §A: 음수/360 초과를 대비한 방어적 정규화 — 이 앱의 rotateY는 항상 0~180 사이만
+// 쓰지만(스프링 없는 tween이라 오버슈트 없음), 혹시 모를 경우에 대비한다.
+function normalizeAngle(deg: number): number {
+  const m = deg % 360;
+  return m < 0 ? m + 360 : m;
+}
 
 export function OpenCardOverlay({
   question,
@@ -31,9 +38,9 @@ export function OpenCardOverlay({
   // 12 §B-3: 실기기 이분 탐색용 임시 토글 — ?flip=fade|?layout=off|?scrim=off|
   // ?shadow=off|?fix=ios. 원인이 확정되면 debugToggles.ts와 이 호출부를 지운다.
   const toggles = useDebugToggles();
-  const storedShineVariant = useShineVariant();
   // 11 §B-3: ?shine=off|v1|v4가 있으면 저장된(/dev) 선택보다 우선한다 — 저장하지 않고
   // 이번 로드에만 적용된다.
+  const storedShineVariant = useShineVariant();
   const shineQueryOverride = useShineQueryOverride();
   const shineVariant = shineQueryOverride === "v1" || shineQueryOverride === "v4" ? shineQueryOverride : storedShineVariant;
   const shineOff = shineQueryOverride === "off";
@@ -91,6 +98,18 @@ export function OpenCardOverlay({
     : reduced
       ? { duration: 0.15 }
       : cardFlipTransition;
+
+  // 14 §A: backface-visibility: hidden 하나에만 기대지 않는다 — iOS WebKit에서 이
+  // 속성이 preserve-3d 자식의 overflow-hidden/합성 레이어 등과 만나면 무시되거나
+  // 불안정해서, 뒤집는 중간에 뒤쪽 면(번호)이 거울상으로 비치는 증상이 났다(실기기
+  // 확인, backface-visibility만으로는 못 막음). 회전 각도(rotateY)를 motion value로
+  // 직접 들고, 각 면의 opacity를 **그 값에서 파생**시켜 같은 프레임에 0/1로 끊는다 —
+  // 시간 기반 keyframe으로 흉내 내지 않는다(easing 때문에 중간 시점의 각도가 90°가
+  // 아니다). 기존 backface-visibility(+ -webkit-)는 보조로 남긴다. `?flip=fade`는
+  // 원래 회전을 안 쓰고 자체 opacity variants로 크로스페이드하므로 이 로직에서 뺀다.
+  const rotateY = useMotionValue(playIntro ? 0 : 180);
+  const numberFaceOpacity = useTransform(rotateY, (v) => (normalizeAngle(v) < 90 ? 1 : 0));
+  const questionFaceOpacity = useTransform(rotateY, (v) => (normalizeAngle(v) >= 90 ? 1 : 0));
 
   // 12 §B-3 ?flip=fade: 3D rotateY 대신 두 면을 opacity 크로스페이드로 전환한다 —
   // 회전 컨테이너 자체는 안 움직이고(rotateY 고정 0), 각 면이 자기 자신의 opacity만
@@ -173,6 +192,12 @@ export function OpenCardOverlay({
                 // isolation만 위 부모로 옮겼다. 활성 중에만(계속 켜두면 iOS에서 레이어가
                 // 남아돌 수 있다).
                 ...(toggles.fixIos ? { willChange: !shineDone ? "transform" : undefined } : {}),
+                // 14 §A: rotateY를 모션 값으로 직접 연결한다(variants가 그대로 이 값을
+                // 애니메이션한다) — 아래 두 면의 opacity가 이 값에서 파생된다. flip=fade는
+                // 원래 회전을 안 쓰므로(fadeContainerVariants가 rotateY를 안 건드림) 여기
+                // 넣지 않는다 — 안 그러면 재접속(애니메이션 없이 바로 open)으로 rotateY가
+                // 180에 고정된 채 flip=fade가 겹쳐 컨테이너 전체가 뒤집힌 채로 보일 수 있다.
+                ...(toggles.flipFade ? {} : { rotateY }),
               }}
               variants={toggles.flipFade ? fadeContainerVariants : rotateContainerVariants}
               initial={playIntro ? "closed" : false}
@@ -187,13 +212,17 @@ export function OpenCardOverlay({
                   WebkitBackfaceVisibility: toggles.fixIos ? "hidden" : undefined,
                   transform: toggles.fixIos ? "translateZ(0)" : undefined,
                   borderRadius: "var(--radius-card)",
+                  // 14 §A: backface-visibility 하나에 기대지 않고 각도에서 직접 파생한
+                  // opacity로 번호 면을 숨긴다/보인다 — flip=fade는 자기 opacity variants를
+                  // 그대로 쓴다(아래도 동일).
+                  ...(toggles.flipFade ? {} : { opacity: numberFaceOpacity }),
                 }}
                 variants={toggles.flipFade ? frontFadeVariants : undefined}
               >
                 <CardBackFace question={question} used={false} />
               </motion.div>
               <motion.div
-                className="absolute inset-0 overflow-hidden"
+                className="absolute inset-0"
                 style={{
                   backfaceVisibility: "hidden",
                   WebkitBackfaceVisibility: toggles.fixIos ? "hidden" : undefined,
@@ -204,17 +233,22 @@ export function OpenCardOverlay({
                     : toggles.fixIos
                       ? "rotateY(180deg) translateZ(0)"
                       : "rotateY(180deg)",
-                  borderRadius: "var(--radius-card)",
+                  ...(toggles.flipFade ? {} : { opacity: questionFaceOpacity }),
                 }}
                 variants={toggles.flipFade ? backFadeVariants : undefined}
               >
-                <QuestionCard question={question} revealed={textRevealed} />
-                {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 v4)로 전환 — v1은 Step 1/2
-                    원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번(와이프+띠, 같은
-                    타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서 뺀다(shineDone).
-                    일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를 거치므로 효과가 동일하다.
-                    11 §B-3: ?shine=off면 전혀 렌더하지 않는다(원인 격리용 임시 토글). */}
-                {playIntro && !shineDone && !shineOff && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
+                {/* 14 §A: overflow-hidden + border-radius를 면 자신이 아니라 이 안쪽
+                    래퍼로 옮겼다 — preserve-3d의 직계 자식(바로 위 면)에 그룹화 속성이
+                    끼지 않게 하는 예방 조치(13번에서 확인한 isolation 문제와 같은 종류). */}
+                <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
+                  <QuestionCard question={question} revealed={textRevealed} />
+                  {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 v4)로 전환 —
+                      v1은 Step 1/2 원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번
+                      (와이프+띠, 같은 타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서
+                      뺀다(shineDone). 일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를
+                      거치므로 효과가 동일하다. 11 §B-3: ?shine=off면 전혀 렌더하지 않는다. */}
+                  {playIntro && !shineDone && !shineOff && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
+                </div>
               </motion.div>
               {playIntro && !shineDone && !shineOff && shineVariant === "v4" && <CardShineV4Glow />}
             </motion.div>
