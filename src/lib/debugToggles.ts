@@ -32,16 +32,27 @@ const DEFAULT_TOGGLES: DebugToggles = {
   fixIos: false,
 };
 
+// useSyncExternalStore는 getSnapshot이 매번 같은 참조를 돌려줘야 한다(안 그러면
+// "변했다"고 보고 다시 렌더 → 다시 getSnapshot 호출 → 또 새 객체... 무한 루프,
+// "Maximum update depth exceeded"로 실제로 터졌다). location.search가 바뀌지 않는
+// 한(이 쿼리는 세션 내내 안 바뀐다) 캐시된 같은 객체를 반환한다.
+let cached: DebugToggles | null = null;
+let cachedSearch: string | null = null;
+
 function readDebugToggles(): DebugToggles {
   if (typeof window === "undefined") return DEFAULT_TOGGLES;
-  const qs = new URLSearchParams(window.location.search);
-  return {
+  const search = window.location.search;
+  if (cached && cachedSearch === search) return cached;
+  const qs = new URLSearchParams(search);
+  cached = {
     flipFade: qs.get("flip") === "fade",
     layoutOff: qs.get("layout") === "off",
     scrimOff: qs.get("scrim") === "off",
     shadowOff: qs.get("shadow") === "off",
     fixIos: qs.get("fix") === "ios",
   };
+  cachedSearch = search;
+  return cached;
 }
 
 function subscribe(): () => void {
