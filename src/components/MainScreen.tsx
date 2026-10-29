@@ -11,12 +11,15 @@ import { OpenCardOverlay } from "@/components/OpenCardOverlay";
 import { SequentialGrid } from "@/components/SequentialGrid";
 import { TopBar } from "@/components/TopBar";
 import { DRAW_RANDOM_STEP_MS, DRAW_RANDOM_SUSPENSE_MS } from "@/lib/config";
-import { categoryExhausted, drawRandom as drawRandomCopy, menu, pick, progress, topBar } from "@/lib/i18n";
+import { categoryExhausted, drawRandom as drawRandomCopy, localFallback, menu, pick, progress, topBar } from "@/lib/i18n";
 import { categories, questionById, questionsInCategory, questions } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { hasServerRepository, setActiveMode, useActiveMode, useServerConnected } from "@/lib/table";
 import { useTableAnnouncements } from "@/lib/table/useTableAnnouncements";
 import { useTableState } from "@/lib/table/useTableState";
 import { useViewStore } from "@/store/useViewStore";
+
+const LOCAL_FALLBACK_TIMEOUT_MS = 30_000;
 
 export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number; onChangeTable: (n: number) => void }) {
   const { state, connection, clientId, drawCard, drawRandom, closeCard, reshuffleCategory } = useTableState(tableNumber);
@@ -29,7 +32,12 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   const [animatedCardId, setAnimatedCardId] = useState<string | null>(null);
   const [prevCardId, setPrevCardId] = useState<string | null | undefined>(undefined);
   const [drawPending, setDrawPending] = useState(false);
+  const [localOpenedAt, setLocalOpenedAt] = useState<number | null>(null);
+  const [showLocalFallbackPrompt, setShowLocalFallbackPrompt] = useState(false);
   const suspenseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const repoMode = useActiveMode();
+  const serverConnected = useServerConnected();
 
   const { message, notifyLocalClose } = useTableAnnouncements(state, clientId, mode);
 
@@ -89,6 +97,26 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
     }
   }, [animatedCardId]);
 
+  // 덮기 링/2초 게이트는 서버 시각이 아니라 "이 기기가 current를 처음 받은 시점"부터 잰다
+  // (Part B §4-6 — 서버·기기 시계 불일치 함정). 재접속으로 이미 열린 카드를 받은 경우도 동일.
+  // Date.now()는 렌더 중 호출할 수 없어 effect에 남기고, setState만 microtask로 미뤄
+  // "effect 안 동기 setState" 규칙을 피한다 — 다음 틱에 반영돼도 지장이 없다(OpenCardOverlay가
+  // localOpenedAt이 아직 없을 땐 서버 openedAt으로 대체한다).
+  useEffect(() => {
+    const value = currCardId ? Date.now() : null;
+    queueMicrotask(() => setLocalOpenedAt(value));
+  }, [currCardId]);
+
+  // 서버 repository로 연결이 끊긴 채 30초가 지나면 "이 기기에서만 진행" 버튼을 보여준다 (Part B §4-5).
+  useEffect(() => {
+    if (repoMode !== "server" || connection === "connected") {
+      queueMicrotask(() => setShowLocalFallbackPrompt(false));
+      return;
+    }
+    const t = setTimeout(() => setShowLocalFallbackPrompt(true), LOCAL_FALLBACK_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [repoMode, connection]);
+
   // 랜덤 뽑기 서스펜스: 격자를 40ms 간격으로 훑다가 실제로 뽑힌 카드에서 멈춘다 — spec §5-2
   useEffect(() => {
     if (!suspenseTargetId) return;
@@ -123,7 +151,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   if (!state) return null;
 
   const openQuestion = state.current && !suspenseTargetId ? questionById(state.current.cardId) : null;
-  const gridDisabled = !!state.current || connection === "offline";
+  const gridDisabled = !!state.current || connection !== "connected";
 
   async function handleOpenCard(question: { id: string }) {
     await drawCard(question.id);
@@ -140,8 +168,14 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
 
   async function handleClose() {
     if (!state?.current) return;
-    notifyLocalClose(state.current.cardId);
-    await closeCard(state.current.cardId);
+    const cardId = state.current.cardId;
+    notifyLocalClose(cardId);
+    const result = await closeCard(cardId);
+    if (result.status === "too_soon") {
+      // 기기 시계가 서버보다 앞서 있었을 뿐일 수 있다 — 조용히 한 번 더 시도한다 (Part B §4-6).
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await closeCard(cardId);
+    }
   }
 
   async function handleReshuffle() {
@@ -151,9 +185,23 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   return (
     <div className="mx-auto flex min-h-dvh flex-col bg-canvas" style={{ maxWidth: "var(--container-app)" }}>
       <LiveAnnouncer message={message} />
-      {connection !== "connected" && (
-        <div role="status" className="px-5 py-2 text-center text-label text-danger">
-          {pick(mode, topBar.offlineBanner.ko, topBar.offlineBanner.en)}
+      {repoMode === "server" && connection !== "connected" && (
+        <div className="flex flex-col items-center gap-2 px-5 py-2 text-center">
+          <p role="status" className="text-label text-danger">
+            {pick(mode, topBar.offlineBanner.ko, topBar.offlineBanner.en)}
+          </p>
+          {showLocalFallbackPrompt && (
+            <Button size="sm" variant="outline" onClick={() => setActiveMode("local")}>
+              {pick(mode, localFallback.prompt.ko, localFallback.prompt.en)}
+            </Button>
+          )}
+        </div>
+      )}
+      {repoMode === "local" && hasServerRepository() && serverConnected && (
+        <div className="flex justify-center px-5 py-2">
+          <Button size="sm" variant="outline" onClick={() => setActiveMode("server")}>
+            {pick(mode, localFallback.backToServer.ko, localFallback.backToServer.en)}
+          </Button>
         </div>
       )}
       <div inert={!!state.current} className="flex flex-1 flex-col">
@@ -213,7 +261,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
           <OpenCardOverlay
             key={state.current.cardId}
             question={openQuestion}
-            openedAt={state.current.openedAt}
+            openedAt={localOpenedAt ?? state.current.openedAt}
             animate={animatedCardId === state.current.cardId}
             onClose={handleClose}
           />

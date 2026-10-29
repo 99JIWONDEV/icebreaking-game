@@ -48,8 +48,8 @@ describe("더블 탭 (spec §4-3)", () => {
 
     expect(first.status).toBe("opened");
     expect(second.status).toBe("opened");
-    expect(second.state.current?.cardId).toBe(CARD_A);
-    expect(second.state.current?.openedAt).toBe(first.state.current?.openedAt);
+    expect(second.state!.current?.cardId).toBe(CARD_A);
+    expect(second.state!.current?.openedAt).toBe(first.state!.current?.openedAt);
   });
 
   it("다른 clientId가 같은 카드를 요청하면 busy", async () => {
@@ -78,7 +78,7 @@ describe("늦은 덮기 (spec §4-6)", () => {
     // 지연되어 늦게 도착한 "A 덮기" 재전송
     const lateClose = await r.closeCard({ table: 1, cardId: CARD_A, epoch: 0, clientId: "device-1" });
     expect(lateClose.status).toBe("noop");
-    expect(lateClose.state.current?.cardId).toBe(CARD_B);
+    expect(lateClose.state!.current?.cardId).toBe(CARD_B);
   });
 });
 
@@ -93,9 +93,9 @@ describe("초기화 경합 (spec §4-9, §9)", () => {
 
     const result = await r.drawCard({ table: 1, cardId: CARD_B, epoch: 0, clientId: "device-2" });
     expect(result.status).toBe("reset");
-    expect(result.state.epoch).toBe(1);
-    expect(result.state.current).toBeNull();
-    expect(result.state.used).toEqual([]);
+    expect(result.state!.epoch).toBe(1);
+    expect(result.state!.current).toBeNull();
+    expect(result.state!.used).toEqual([]);
   });
 });
 
@@ -110,8 +110,8 @@ describe("방치 (spec §4-8)", () => {
 
     const result = await r.drawCard({ table: 1, cardId: CARD_B, epoch: 0, clientId: "device-2" });
     expect(result.status).toBe("opened");
-    expect(result.state.current?.cardId).toBe(CARD_B);
-    expect(result.state.used).toContain(CARD_A);
+    expect(result.state!.current?.cardId).toBe(CARD_B);
+    expect(result.state!.used).toContain(CARD_A);
   });
 });
 
@@ -185,7 +185,7 @@ describe("카테고리 소진과 다시 섞기 (spec §4-14, §5-4)", () => {
 
     const reshuffled = await r.reshuffleCategory({ table: 1, category, epoch: 0 });
     expect(reshuffled.status).toBe("reshuffled");
-    expect(reshuffled.state.used.filter((id) => ids.includes(id))).toHaveLength(0);
+    expect(reshuffled.state!.used.filter((id) => ids.includes(id))).toHaveLength(0);
   });
 });
 
