@@ -5,6 +5,7 @@ import { TABLE_COUNT } from "@/lib/config";
 import { pick, tableEntry } from "@/lib/i18n";
 import { BottomBar, bottomBarClearance } from "@/components/BottomBar";
 import { Button } from "@/components/Button";
+import { Footer } from "@/components/Footer";
 import { TableNumberInput } from "@/components/TableNumberInput";
 import { useViewStore } from "@/store/useViewStore";
 
@@ -35,6 +36,7 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
       <div className="flex flex-1 flex-col justify-center">
         <TableNumberInput id={inputId} value={value} onChange={(v) => { setValue(v); setError(false); }} error={error} />
       </div>
+      <Footer />
 
       <BottomBar>
         <Button onClick={submit} size="lg" variant="fill">

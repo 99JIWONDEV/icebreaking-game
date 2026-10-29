@@ -167,6 +167,15 @@ v3에서 `xl`(56px)은 삭제됐다. radius는 전체 시스템에서 **8 / 12 /
 버튼 뒤로 이 바의 글자가 비쳐 겹쳐 보이는 문제가 있었다(스크린샷으로 발견, `hidden`
 prop으로 수정).
 
+## 푸터 — `src/components/Footer.tsx`
+
+메인 화면 격자 맨 아래(기존 `bottomBarClearance` 패딩 안쪽, CTA 바 위로 떠 있게)와
+입장 화면 맨 아래에만 둔다 — 열린 카드 화면·메뉴에는 없다. "Developed by Jiwon
+Park" / "© 2026 Jiwon Park" 두 줄, **언어 전환과 무관하게 항상 영어**, 연도
+하드코딩(Cache Components 켜진 서버 컴포넌트에서 `new Date()`는 prerender 오류).
+`text-caption`(13/18/400) + `ink-sub`, 가운데 정렬, 위 여백만(`mt-8`=32px) — 구분선·
+아이콘·링크 없음.
+
 ## 테이블 번호 입력창 — `src/components/TableNumberInput.tsx`
 
 위→아래: 라벨(`테이블 번호 · Table number`, `text-label`, `ink`) → 예시 줄(`예: 7 · e.g.

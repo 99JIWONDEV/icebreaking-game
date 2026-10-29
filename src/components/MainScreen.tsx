@@ -5,6 +5,7 @@ import { AnimatePresence } from "motion/react";
 import { BottomBar, bottomBarClearance } from "@/components/BottomBar";
 import { Button } from "@/components/Button";
 import { CardGrid } from "@/components/CardGrid";
+import { Footer } from "@/components/Footer";
 import { LiveAnnouncer } from "@/components/LiveAnnouncer";
 import { MenuDrawer } from "@/components/MenuDrawer";
 import { OpenCardOverlay } from "@/components/OpenCardOverlay";
@@ -236,6 +237,10 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
               onOpenCard={handleOpenCard}
             />
           )}
+          {/* 격자의 기존 paddingBottom(bottomBarClearance) 안쪽에 둬서, 스크롤 끝까지
+              내렸을 때 CTA 바 위로 떠 있게 한다 — 카드가 열려 있을 때는 이 div 자체가
+              렌더링되지만 OpenCardOverlay가 위에 덮으므로 보이지 않는다. */}
+          <Footer />
         </div>
 
         <BottomBar hidden={!!state.current}>
