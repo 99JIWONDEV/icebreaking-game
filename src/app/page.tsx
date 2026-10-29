@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DebugViewportOverlay } from "@/components/DebugViewportOverlay";
 import { MainScreen } from "@/components/MainScreen";
 import { hasSeenIntroRecently, Splash } from "@/components/Splash";
 import { TableEntry } from "@/components/TableEntry";
@@ -43,35 +44,34 @@ export default function Home() {
 
   // axe-core landmark-one-main/region: 앱 전체를 <main> 하나로 감싼다(여러 "페이지"가
   // 전환되는 SPA라 각 단계 컴포넌트 안이 아니라 여기 한 곳에만 둔다).
+  let content;
   if (phase === "intro") {
-    return (
-      <main>
-        <Splash onDone={proceedPastIntro} />
-      </main>
+    content = <Splash onDone={proceedPastIntro} />;
+  } else if (phase === "tableEntry" || !tableNumber) {
+    content = (
+      <TableEntry
+        onJoin={(n) => {
+          setTableNumber(n);
+          setPhase("main");
+        }}
+      />
     );
-  }
-
-  if (phase === "tableEntry" || !tableNumber) {
-    return (
-      <main>
-        <TableEntry
-          onJoin={(n) => {
-            setTableNumber(n);
-            setPhase("main");
-          }}
-        />
-      </main>
-    );
-  }
-
-  return (
-    <main>
+  } else {
+    content = (
       <MainScreen
         tableNumber={tableNumber}
         onChangeTable={(n) => {
           setTableNumber(n);
         }}
       />
-    </main>
+    );
+  }
+
+  return (
+    <>
+      <main>{content}</main>
+      {/* 12 §A-2: /?debug=vv로만 보임, 저장 없음 — 나중에 지울 것 */}
+      <DebugViewportOverlay />
+    </>
   );
 }
