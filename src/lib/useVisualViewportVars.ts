@@ -21,6 +21,15 @@ export function computeViewportVars(offsetTop: number, height: number, innerHeig
   };
 }
 
+/** 12 §A-3-2: 키보드 열림 판정을 휴리스틱만으로는 믿을 수 없다 — iOS Chrome은 키보드가
+ *  열려도 `innerHeight`가 같이 줄어들 수 있어서(확인 필요) `innerHeight - vv.height`
+ *  차이가 거의 0이 될 수 있다. `input`/`textarea`에 포커스가 가 있으면 휴리스틱과
+ *  무관하게 무조건 "open"으로 본다 — 포커스가 떠나면 휴리스틱으로 되돌아간다. 순수
+ *  함수로 분리해 단위 테스트한다. */
+export function resolveKeyboardState(focused: boolean, heuristic: "open" | "closed"): "open" | "closed" {
+  return focused ? "open" : heuristic;
+}
+
 /** 앱 루트에서 한 번만 호출한다(src/app/page.tsx) — `--vv-top`/`--vv-height`/`--layout-h`를
  *  <html>에 CSS 변수로, 키보드 열림 여부를 `data-keyboard`로 노출한다. 드로어/하단
  *  바가 이 값들을 기준으로 위치를 잡는다(10 §3, 11 §A).
@@ -37,6 +46,7 @@ export function useVisualViewportVars() {
     if (!vv) return; // 미지원 브라우저: CSS 기본값(100dvh)로 폴백
     const root = document.documentElement;
     let raf = 0;
+    let focused = false;
     const apply = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
@@ -44,18 +54,34 @@ export function useVisualViewportVars() {
         root.style.setProperty("--vv-top", `${vvTop}px`);
         root.style.setProperty("--vv-height", `${vvHeight}px`);
         root.style.setProperty("--layout-h", `${window.innerHeight}px`);
-        root.dataset.keyboard = keyboard;
+        root.dataset.keyboard = resolveKeyboardState(focused, keyboard);
       });
+    };
+    // 12 §A-3-2: input/textarea에 포커스가 있으면 휴리스틱을 무시하고 바로 "open".
+    const onFocusIn = (e: FocusEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) {
+        focused = true;
+        root.dataset.keyboard = "open";
+      }
+    };
+    const onFocusOut = () => {
+      focused = false;
+      apply(); // 포커스가 떠나면 휴리스틱으로 되돌아간다.
     };
     apply();
     vv.addEventListener("resize", apply);
     vv.addEventListener("scroll", apply);
     window.addEventListener("resize", apply);
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
     return () => {
       cancelAnimationFrame(raf);
       vv.removeEventListener("resize", apply);
       vv.removeEventListener("scroll", apply);
       window.removeEventListener("resize", apply);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
       root.style.removeProperty("--vv-top");
       root.style.removeProperty("--vv-height");
       root.style.removeProperty("--layout-h");

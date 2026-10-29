@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeViewportVars } from "@/lib/useVisualViewportVars";
+import { computeViewportVars, resolveKeyboardState } from "@/lib/useVisualViewportVars";
 
 // 10 §4-2: 이 프로젝트의 vitest는 node 환경이라(jsdom/testing-library 미설치) 훅의
 // DOM 배선(addEventListener, CSS 변수 적용, 언마운트 정리)은 여기서 테스트하지 않고
@@ -26,5 +26,26 @@ describe("computeViewportVars", () => {
     expect(result.vvTop).toBe(60);
     expect(result.vvHeight).toBe(500);
     expect(result.keyboard).toBe("open");
+  });
+});
+
+// 12 §A-3-2: input/textarea 포커스는 휴리스틱을 무시하고 "open"을 강제한다 — iOS
+// Chrome에서 innerHeight가 vv.height와 함께 줄어들어 휴리스틱이 "closed"를 잘못
+// 반환할 수 있는 경우의 방어책.
+describe("resolveKeyboardState", () => {
+  it("포커스가 있으면 휴리스틱이 closed여도 open을 강제한다", () => {
+    expect(resolveKeyboardState(true, "closed")).toBe("open");
+  });
+
+  it("포커스가 있으면 휴리스틱이 open이어도 open을 유지한다", () => {
+    expect(resolveKeyboardState(true, "open")).toBe("open");
+  });
+
+  it("포커스가 없으면 휴리스틱 값을 그대로 쓴다(closed)", () => {
+    expect(resolveKeyboardState(false, "closed")).toBe("closed");
+  });
+
+  it("포커스가 없으면 휴리스틱 값을 그대로 쓴다(open)", () => {
+    expect(resolveKeyboardState(false, "open")).toBe("open");
   });
 });

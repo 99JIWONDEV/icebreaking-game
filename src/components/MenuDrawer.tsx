@@ -131,13 +131,15 @@ export function MenuDrawer({
       <Drawer.Portal>
         {/* 10 §3-2: inset-0 대신 visualViewport 기준(top/height)으로 — iOS는 키보드가
             열려도 레이아웃 뷰포트(inset-0의 기준)를 안 줄이고 비주얼 뷰포트만 줄인다.
-            11 §A: height는 --vv-height가 아니라 --layout-h(레이아웃 뷰포트 높이) —
-            --vv-height로 두면 키보드 자동완성 막대 높이만큼 scrim이 못 미쳐서 그 틈으로
-            뒤 페이지가 비쳐 보였다(실기기에서 발견). 키보드 뒤까지 덮여도 어차피 안 보여서
-            무해하다. */}
+            12 §A-3: 11에서 --layout-h(= innerHeight)까지 늘렸는데, 실기기(iPhone 시크릿
+            Chrome)에서 여전히 끊겼다 — iOS Chrome은 키보드가 열리면 innerHeight도 같이
+            줄어들 수 있어서(확인 필요, ?debug=vv로 실측 예정) --layout-h ≈ --vv-height가
+            돼 버려 늘린 게 무효화됐을 가능성이 있다. --layout-h에 기대지 않고, 고정
+            480px를 더해 **항상** 키보드보다 충분히 길게 만든다 — fixed라 문서 스크롤에
+            영향 없고, 아래쪽은 화면 밖이라 무해하다. */}
         <Drawer.Overlay
           className="fixed inset-x-0 z-40 bg-scrim"
-          style={{ top: "var(--vv-top, 0px)", height: "var(--layout-h, 100dvh)" }}
+          style={{ top: "var(--vv-top, 0px)", height: "calc(var(--vv-height, 100dvh) + 480px)" }}
         />
         <Drawer.Content
           // 07 §2-5: 닫을 때 포커스가 메뉴 버튼으로 돌아와야 한다 — Radix 기본 복귀가
@@ -162,10 +164,10 @@ export function MenuDrawer({
           className="fixed left-0 z-50 flex w-[86%] flex-col bg-paper outline-none"
           style={{
             top: "var(--vv-top, 0px)",
-            // 11 §A: 바깥 패널은 --layout-h(레이아웃 뷰포트 높이, 키보드가 열려도 안 줄어듦)
-            // 까지 흰 배경을 늘린다 — 안쪽 스크롤 영역(아래)만 --vv-height로 제한해서,
-            // 자동완성 막대가 뜨는 구간은 이 패널의 bg-paper가 그냥 흰 배경으로 채운다.
-            height: "var(--layout-h, 100dvh)",
+            // 12 §A-3: scrim과 같은 이유로 --layout-h 대신 고정 480px 추가 — 안쪽 스크롤
+            // 영역(아래)만 --vv-height로 제한해서, 패널 자체는 그보다 길게 흰 배경(bg-paper)
+            // 으로 채운다.
+            height: "calc(var(--vv-height, 100dvh) + 480px)",
             maxWidth: "20rem",
             borderRight: "1px solid var(--color-hairline)",
           }}
