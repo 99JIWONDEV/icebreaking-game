@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { CardBackFace } from "@/components/CardBackFace";
-import { CardShineV1, CardShineV4Glints, CardShineV4Glow, CardShineV4Sweep } from "@/components/CardShine";
+import { CardShineV1, CardShineV4Glow, CardShineV4Sweep } from "@/components/CardShine";
 import { CloseButtonRing } from "@/components/CloseButtonRing";
 import { QuestionCard } from "@/components/QuestionCard";
 import { MIN_OPEN_MS } from "@/lib/config";
@@ -142,18 +142,13 @@ export function OpenCardOverlay({
                 }}
               >
                 <QuestionCard question={question} revealed={textRevealed} />
-                {/* 07 §1: /dev?shine=v1|v4(기본 v4)로 전환 — v1은 Step 1/2 원본 기하 복원,
-                    v4는 왼쪽 위→오른쪽 아래 대각선 + 와이프 + 글로우 + 글린트. 끝나면
-                    DOM에서 뺀다(shineDone). 일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로
-                    하나를 거치므로 효과가 동일하다. */}
+                {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 v4)로 전환 — v1은 Step 1/2
+                    원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번(와이프+띠, 같은
+                    타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서 뺀다(shineDone).
+                    일반 열기와 랜덤 뽑기 결과 공개 둘 다 이 경로 하나를 거치므로 효과가 동일하다. */}
                 {playIntro && !shineDone && (shineVariant === "v1" ? <CardShineV1 /> : <CardShineV4Sweep />)}
               </div>
-              {playIntro && !shineDone && shineVariant === "v4" && (
-                <>
-                  <CardShineV4Glow />
-                  <CardShineV4Glints />
-                </>
-              )}
+              {playIntro && !shineDone && shineVariant === "v4" && <CardShineV4Glow />}
             </motion.div>
           </motion.div>
         </div>
