@@ -150,7 +150,17 @@ export function OpenCardOverlay({
                   transition: reduced ? { duration: 0.15 } : cardMoveSpring,
                 })}
             className="relative w-full"
-            style={{ maxWidth: "var(--size-card-max)", aspectRatio: "3 / 4.2", perspective: 1200 }}
+            style={{
+              maxWidth: "var(--size-card-max)",
+              aspectRatio: "3 / 4.2",
+              perspective: 1200,
+              // 13: ?fix=ios의 isolation은 preserve-3d 요소 자신이 아니라 여기(부모)에 둔다 —
+              // isolation/overflow/opacity<1/filter 같은 "그룹화" 속성이 preserve-3d 요소
+              // 자신에게 있으면 used value가 flat으로 강제돼 자식의 backface-visibility가
+              // 깨진다(뒷면이 거울상으로 멈춤, 라이브에서 재현·확인). 부모는 preserve-3d가
+              // 아니라서 안전하다.
+              ...(toggles.fixIos ? { isolation: "isolate" } : {}),
+            }}
           >
             <motion.div
               className="relative h-full w-full"
@@ -159,9 +169,10 @@ export function OpenCardOverlay({
                 borderRadius: "var(--radius-card)",
                 // 12 §B-3 ?shadow=off: 카드 box-shadow 전부 제거.
                 boxShadow: toggles.shadowOff ? "none" : "var(--shadow-lifted)",
-                // 12 §B-3 ?fix=ios: 회전 컨테이너를 별도 합성 레이어로 격리하고, 활성 중에만
-                // will-change를 준다(계속 켜두면 오히려 iOS에서 레이어가 남아돌 수 있다).
-                ...(toggles.fixIos ? { isolation: "isolate", willChange: !shineDone ? "transform" : undefined } : {}),
+                // 13: will-change는 그룹화 속성이 아니라 preserve-3d 요소에 둬도 안전하다 —
+                // isolation만 위 부모로 옮겼다. 활성 중에만(계속 켜두면 iOS에서 레이어가
+                // 남아돌 수 있다).
+                ...(toggles.fixIos ? { willChange: !shineDone ? "transform" : undefined } : {}),
               }}
               variants={toggles.flipFade ? fadeContainerVariants : rotateContainerVariants}
               initial={playIntro ? "closed" : false}
