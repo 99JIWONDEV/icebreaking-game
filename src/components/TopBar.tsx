@@ -36,7 +36,7 @@ export function TopBar({
 
       <div className="flex items-center gap-2">
         <ConnectionDot connection={connection} />
-        <span className="text-label text-ink-sub">{pick(mode, table.ko, table.en)}</span>
+        <span className="text-label text-ink-sub-bg">{pick(mode, table.ko, table.en)}</span>
       </div>
     </header>
   );

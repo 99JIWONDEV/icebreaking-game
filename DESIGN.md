@@ -33,14 +33,18 @@ Toss의 명료함(화면당 행동 하나, 고정 CTA, 해요체)과 Apple의 De
 
 | 토큰 | 값 | 용도 / 대비 |
 |---|---|---|
-| `--color-canvas` | `#FAFAF9` | 앱 배경 |
+| `--color-canvas` | `#FAFAF9` | (15 이후 화면에선 안 쓴다 — 앱 배경은 아래 `backdrop` + 배경 이미지가 대체. `/dev` 패널만 사용) |
+| `--color-backdrop` | `#FBF9F7` | **15 신설** — 배경 이미지의 평균색. `html` 폴백 색(이미지가 늦게 떠도 번쩍이지 않게) |
+| `--color-backdrop-bar` | `rgb(251 249 247 / 0.85)` | **15 신설** — 하단 바 면과 그 위 페이드(불투명이면 패턴 위에 평평한 띠로 보여서) |
 | `--color-paper` | `#FFFFFF` | 카드 면, 입력창, 메뉴 시트 |
 | `--color-ink` | `#171717` | 글자, 포커스 링, 깜빡이는 커서 (canvas 위 17.2:1) |
 | `--color-ink-soft` | `#3A3A37` | **주요 버튼(`fill`) 채움** — v4: "검정이 너무 강하다"는 피드백으로 순수 ink 대신(on-ink 위 11.41:1) |
 | `--color-ink-soft-pressed` | `#2B2B28` | `fill` 버튼 pressed 전용(불투명도 1로 오버레이 전체 교체) |
 | `--color-ink-sub` | `#6B6B66` | 보조 글자 (canvas 5.13, paper 5.36, fill-weak 위 4.61) |
+| `--color-ink-sub-bg` | `#5E5E59` | **15 신설** — 배경 이미지 **바로 위** 보조 글자 전용(최악 5.17:1). 흰 카드/드로어 위는 `ink-sub` 그대로 |
 | `--color-hairline` | `#E4E4E0` | 카드/구분선 1px — **의도적으로 낮은 대비의 장식 경계** |
 | `--color-line-strong` | `#8C8C87` | 입력창 테두리 (paper 위 3.38:1, UI 경계 3:1 충족) |
+| `--color-line-on-bg` | `#7A7A75` | **15 신설** — 입장 화면 밑줄 입력 전용(최악 3.42:1) |
 | `--color-fill-weak` | `#EEEEEC` | `weak` 버튼, 세그먼트 트랙, 사용된 카드 면 |
 | `--color-danger` | `#B42318` | 오류/연결 끊김 글자·테두리 (paper 위 6.57:1). 아이콘+문구 병행. **화면에 남는 유일한 유채색** |
 | `--color-on-ink` | `#FFFFFF` | fill 버튼 글자, 포커스 링 offset (ink 위 17.9:1) |
@@ -50,6 +54,32 @@ Toss의 명료함(화면당 행동 하나, 고정 CTA, 해요체)과 Apple의 De
 항상 토큰만 쓰고 raw hex를 쓰지 않는다 — 유일한 예외는 `layout.tsx`의
 `<meta name="theme-color">`(CSS 변수를 못 받는 자리라 리터럴 유지, `--color-canvas`와
 손으로 동기화).
+
+### 배경 이미지 — 수채화 격자 (15, 사용자 직접 요청)
+
+**"화면에 유채색은 danger뿐"과 "canvas는 `#FAFAF9` 단색" 규칙의 장식 예외**다. 연한 베이지 수채화
+깅엄 무늬(흰 바탕, 평균색 `rgb(251,249,247)`)를 앱 전체 배경으로 쓴다.
+- 파일: `public/bg/background.webp`(1296×1728, WebP q80, **20,266 bytes**). 원본 PNG(2.2MB)는
+  커밋하지 않았다. 이미지 출처/라이선스는 **확인 필요**(저장소가 Public이라 파일이 공개된다).
+- 적용: `layout.tsx`의 `<body>` 안에 `<div aria-hidden class="app-bg">` 한 번.
+  `position: fixed; top:0; left:0; width:100%; height:100lvh; z-index:-1; pointer-events:none;
+  background: url(/bg/background.webp) center top / cover no-repeat`(`globals.css`).
+  `background-attachment: fixed`는 iOS에서 깨져서 안 쓴다. 높이를 `100lvh`로 둬서 주소창이
+  접히고 펴져도 배경이 늘었다 줄지 않는다. `--vv-*`/키보드 처리와 섞지 않는다. `html` 폴백 색은
+  `backdrop`, `body`는 투명.
+- 화면: 입장·메인·메뉴 열림·카드 열림(scrim 아래)·인트로 모두 이 배경. **격자 카드 면, 열린 카드,
+  메뉴 드로어는 그대로 `paper`(흰색)** — 배경은 예전 `canvas` 자리만 대체했다.
+  `prefers-reduced-motion`과 무관(정적 이미지).
+- 대비(이미지의 가장 진한 픽셀 `rgb(234,228,221)` 기준, `npm run check-contrast`에 쌍 추가):
+  `ink` 14.21 통과 / `ink-sub` **4.24 미달** → 배경 위 글자 전용 `ink-sub-bg` 5.17 /
+  `line-strong` **2.68 미달** → 입장 밑줄만 `line-on-bg` 3.42. 선택지 1(배경 불투명도 낮추기)은
+  패턴을 바꾸므로 쓰지 않았고, 흰 카드 위 글자가 안 변하도록 `ink-sub`는 두고 토큰을 분리했다.
+  실제 요소 위치의 픽셀 실측(스크린샷에서 글자를 투명 처리한 뒤 bbox 내 최악 픽셀)은 전부 5.3 이상
+  (글자)·3.7 이상(밑줄).
+- 하단 바: 면과 위 페이드를 `backdrop-bar`(85%)로 바꿨다 — 불투명 `#FBF9F7`이면 패턴 위에 평평한
+  띠로 보였다. 격자 카드가 버튼 뒤에서 흐리게 비치지만 버튼 가독성엔 영향 없다. 사용된 카드(`fill-weak`
+  면 + 체크)는 배경 위에서도 흰 카드와 구분된다(스크린샷 확인).
+- 3:4 세로 이미지라 `cover`로 가로로 넓은 화면(데스크톱)에서는 위아래가 잘린다.
 
 ### 지운 것 (Minimal → v3)
 
@@ -472,7 +502,7 @@ box-shadow 글로우)을 쓰면 안 된다 — 이 문서 "지운 것"들이 다
 - [x] "Welcome to…", "Unlock…", "Seamless" 류 마케팅 카피 없음
 - [x] 가운데 정렬 히어로 + CTA + 카드 3장 레이아웃 아님
 - [x] shadcn/Tailwind 기본 팔레트 그대로 쓰지 않음
-- [x] **카테고리별 색, 장식 질감/광택 없음** — 카드 변형 A/B의 프레임·틱은 전부 중성
+- [x] **카테고리별 색, 장식 질감/광택 없음**(15: 앱 배경 이미지 하나만 예외) — 카드 변형 A/B의 프레임·틱은 전부 중성
       `hairline`/`line-strong` 1px 선이지 색 장식이 아니다
 - [x] **계절 일러스트/이모지 장식 없음**
 - [x] **컨페티·글로우·파티클 없음(카드 오픈 연출 제외)** — 외곽 글로우는 07에서
@@ -481,5 +511,5 @@ box-shadow 글로우)을 쓰면 안 된다 — 이 문서 "지운 것"들이 다
       규칙이 그대로 적용된다
 - [x] **44px 이상의 큰 버튼 없음** (가장 큰 버튼 `lg` 40px — v4(09)에서 44→40)
 - [x] **전폭(`display="full"`) 버튼 없음** — 전부 내용+패딩 폭
-- [x] 화면에 보이는 유채색은 `danger`(오류)뿐 — `accent`가 삭제됐으므로 주요 버튼(`ink`
+- [x] (15: 배경 이미지의 베이지 수채화 격자는 사용자 요청 장식 예외 — 위 "배경 이미지" 참고) 화면에 보이는 유채색은 `danger`(오류)뿐 — `accent`가 삭제됐으므로 주요 버튼(`ink`
       채움)과 포커스 링(`ink`)도 무채색이다 (스크린샷 확인)

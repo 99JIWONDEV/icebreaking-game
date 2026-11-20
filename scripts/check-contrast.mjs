@@ -15,6 +15,12 @@ const TOKENS = {
   "fill-weak": "#EEEEEC",
   danger: "#B42318",
   "on-ink": "#FFFFFF",
+  // 15: 배경 이미지(public/bg/background.webp)에서 가장 진한 픽셀(휘도 최소) — 실측값.
+  // 이미지를 바꾸면 이 값과 아래 "배경 위" 쌍을 다시 계산할 것.
+  "bg-darkest": "#EAE4DD",
+  "bg-avg": "#FBF9F7",
+  "ink-sub-bg": "#5E5E59",
+  "line-on-bg": "#7A7A75",
 };
 
 function hexToRgb(hex) {
@@ -51,6 +57,14 @@ const PAIRS = [
   { label: "danger on canvas", fg: "danger", bg: "canvas", min: 4.5 },
   { label: "line-strong on paper (input border, UI)", fg: "line-strong", bg: "paper", min: 3 },
   { label: "line-strong on canvas (UI boundary)", fg: "line-strong", bg: "canvas", min: 3 },
+  // 15: 배경 이미지 위에 **직접** 놓이는 요소 — 이미지의 가장 진한 픽셀 기준 최악값
+  { label: "ink on bg-darkest (제목·구간 헤더·입장 라벨)", fg: "ink", bg: "bg-darkest", min: 4.5 },
+  { label: "ink-sub on bg-darkest (15 이전 값 — 참고용, 미달이라 안 쓴다)", fg: "ink-sub", bg: "bg-darkest", min: 0, note: "예외: 배경 위에서는 ink-sub-bg로 대체했다(기록용)" },
+  { label: "ink-sub-bg on bg-darkest (0/55·구간 범위·테이블 라벨·입장 예시·푸터)", fg: "ink-sub-bg", bg: "bg-darkest", min: 4.5 },
+  { label: "ink-sub-bg on bg-avg (하단 바 면 backdrop)", fg: "ink-sub-bg", bg: "bg-avg", min: 4.5 },
+  { label: "line-strong on bg-darkest (15 이전 값 — 참고용)", fg: "line-strong", bg: "bg-darkest", min: 0, note: "예외: 입장 밑줄은 line-on-bg로 대체했다(기록용)" },
+  { label: "line-on-bg on bg-darkest (입장 화면 밑줄, UI)", fg: "line-on-bg", bg: "bg-darkest", min: 3 },
+  { label: "danger on bg-darkest (오프라인 배너 글자)", fg: "danger", bg: "bg-darkest", min: 4.5 },
   {
     label: "hairline on paper (card/divider border)",
     fg: "hairline",

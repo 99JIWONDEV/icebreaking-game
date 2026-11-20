@@ -56,7 +56,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
     <div
       id="intro-splash"
       onClick={finish}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-2 bg-canvas px-5 text-center"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-2 px-5 text-center"
     >
       <motion.span
         role="status"
@@ -77,7 +77,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
         <span lang="ko" className="font-sans text-intro-ko text-ink text-pretty">
           {intro.ko}
         </span>
-        <span lang="en" className="font-sans text-intro-en text-ink-sub">
+        <span lang="en" className="font-sans text-intro-en text-ink-sub-bg">
           {intro.en}
         </span>
       </motion.span>

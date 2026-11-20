@@ -184,7 +184,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh flex-col bg-canvas" style={{ maxWidth: "var(--container-app)" }}>
+    <div className="mx-auto flex min-h-dvh flex-col" style={{ maxWidth: "var(--container-app)" }}>
       <LiveAnnouncer message={message} />
       {repoMode === "server" && connection !== "connected" && (
         <div className="flex flex-col items-center gap-2 px-5 py-2 text-center">
@@ -212,7 +212,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
 
         <div className="flex flex-col gap-1 px-5 pb-4">
           <h1 className="font-sans text-ink text-title">{pick(mode, currentCategoryLabel.ko, currentCategoryLabel.en)}</h1>
-          <p className="text-label text-ink-sub">
+          <p className="text-label text-ink-sub-bg">
             {pick(mode, progress(currentCounts.used, currentCounts.total).ko, progress(currentCounts.used, currentCounts.total).en)}
           </p>
         </div>

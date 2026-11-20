@@ -16,6 +16,7 @@ export function TableNumberInput({
   ariaLabel,
   ariaDescribedBy,
   onKeyDown,
+  onBackground,
 }: {
   id: string;
   value: string;
@@ -27,6 +28,8 @@ export function TableNumberInput({
   ariaLabel?: string;
   ariaDescribedBy?: string;
   onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  /** 15: 흰 면이 아니라 배경 이미지 위에 직접 놓일 때(입장 화면) — 밑줄을 진한 토큰으로. */
+  onBackground?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -65,7 +68,7 @@ export function TableNumberInput({
         aria-label={ariaLabel}
         className="h-full w-full bg-transparent text-center text-input-number text-ink outline-none"
         style={{
-          borderBottom: `2px solid ${error ? "var(--color-danger)" : focused ? "var(--color-ink)" : "var(--color-line-strong)"}`,
+          borderBottom: `2px solid ${error ? "var(--color-danger)" : focused ? "var(--color-ink)" : (onBackground ? "var(--color-line-on-bg)" : "var(--color-line-strong)")}`,
           caretColor: "var(--color-ink)",
         }}
       />

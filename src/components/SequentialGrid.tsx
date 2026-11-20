@@ -36,7 +36,7 @@ export function SequentialGrid({
           <section key={section.category.id} aria-labelledby={headingId} className="flex flex-col gap-3">
             <h2 id={headingId} className="flex items-baseline justify-between">
               <span className="font-sans text-ink text-btn">{pick(mode, section.category.ko, section.category.en)}</span>
-              <span className="flex items-baseline gap-1.5 text-label text-ink-sub" style={{ fontVariantNumeric: "tabular-nums" }}>
+              <span className="flex items-baseline gap-1.5 text-label text-ink-sub-bg" style={{ fontVariantNumeric: "tabular-nums" }}>
                 {rangeLabel}
                 <span aria-hidden>·</span>
                 <span>

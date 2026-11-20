@@ -6,7 +6,7 @@ export function Footer({ hideOnKeyboard }: { hideOnKeyboard?: boolean } = {}) {
   // (globals.css의 :root[data-keyboard="open"] .hide-on-keyboard). 메인 화면
   // 푸터는 이 prop을 안 받으므로 영향 없다.
   return (
-    <footer className={`mt-8 flex flex-col items-center text-center text-caption text-ink-sub ${hideOnKeyboard ? "hide-on-keyboard" : ""}`}>
+    <footer className={`mt-8 flex flex-col items-center text-center text-caption text-ink-sub-bg ${hideOnKeyboard ? "hide-on-keyboard" : ""}`}>
       <p>Developed by Jiwon Park</p>
       <p>© 2026 Jiwon Park</p>
     </footer>

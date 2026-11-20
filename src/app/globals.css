@@ -13,6 +13,12 @@
   /* ---- color — v3("검정 버튼") 재개정. accent(슬레이트 블루)는 완전히 삭제했다 — 화면에
      남는 유채색은 danger뿐이다. 주요 버튼은 ink 채움 + 흰 글자, 포커스 링도 ink. ---- */
   --color-canvas: #fafaf9;
+  /* 15: 배경 이미지(public/bg/background.webp)의 평균색 — html 폴백 색이자 하단 바 면.
+     이미지가 늦게 떠도 번쩍이지 않게 한다. 화면의 "canvas" 자리는 이제 이 이미지가 대신한다. */
+  --color-backdrop: #fbf9f7;
+  /* 15: 하단 바 면/페이드 — 불투명하면 패턴 위에 평평한 단색 띠로 보여서 85%로 낮췄다(격자 카드가
+     뒤에서 흐리게 비치지만 버튼 가독성엔 영향 없음). 값은 backdrop과 같은 rgb. */
+  --color-backdrop-bar: rgb(251 249 247 / 0.85);
   --color-paper: #ffffff;
   --color-ink: #171717;
   /* v4: 주요 버튼 채움 전용 — 09 "검정이 너무 강하다" 피드백으로 순수 ink 대신 쓴다.
@@ -20,8 +26,13 @@
   --color-ink-soft: #3a3a37;
   --color-ink-soft-pressed: #2b2b28;
   --color-ink-sub: #6b6b66;
+  /* 15: 배경 이미지 **바로 위**에 놓이는 보조 글자 전용(흰 카드/드로어 위에선 ink-sub 그대로).
+     이미지의 가장 진한 픽셀 rgb(234,228,221) 위에서 ink-sub는 4.24:1이라 13px 글자 기준 미달 → 5.17:1. */
+  --color-ink-sub-bg: #5e5e59;
   --color-hairline: #e4e4e0;
   --color-line-strong: #8c8c87;
+  /* 15: 입장 화면 밑줄 입력 전용 — 배경 위 최악값에서 line-strong은 2.68:1(UI 3:1 미달) → 3.42:1 */
+  --color-line-on-bg: #7a7a75;
   --color-fill-weak: #eeeeec;
   --color-danger: #b42318;
   --color-on-ink: #ffffff;
@@ -142,8 +153,28 @@
   --container-app: 430px;
 }
 
+/* 15: html은 폴백 색만, 이미지는 아래 .app-bg 고정 레이어(layout.tsx에 한 번)가 그린다.
+   body는 투명 — 흰색 canvas가 이미지를 가리면 안 된다. */
+html {
+  background-color: var(--color-backdrop);
+}
+
+/* 15 §2: 전체 화면 고정 배경 레이어. background-attachment: fixed는 iOS에서 깨져서 안 쓰고,
+   높이는 100lvh(큰 뷰포트)라 주소창이 접히고 펴져도 늘었다 줄지 않는다. --vv-* 변수와
+   키보드 처리와 섞지 않는다(키보드가 열려도 배경은 움직이지 않는다). 장식 예외 — DESIGN.md. */
+.app-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100lvh;
+  z-index: -1;
+  pointer-events: none;
+  background: url(/bg/background.webp) center top / cover no-repeat;
+}
+
 body {
-  background: var(--color-canvas);
+  background: transparent;
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
@@ -194,7 +225,7 @@ html[data-intro="skip"] #intro-splash {
 
 /* 하단 고정 CTA 바 위, 격자가 버튼 뒤로 부드럽게 사라지는 가림막(장식 아님) */
 .cta-fade-mask {
-  background: linear-gradient(to bottom, transparent, var(--color-canvas));
+  background: linear-gradient(to bottom, rgb(251 249 247 / 0), var(--color-backdrop-bar));
 }
 
 /* 09 §1: 테이블 번호 입력이 비어 있고 포커스가 없을 때 깜빡이는 커서 막대 — 포커스되면

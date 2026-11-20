@@ -29,7 +29,7 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
 
   return (
     <div
-      className="flex min-h-dvh flex-col bg-canvas px-5"
+      className="flex min-h-dvh flex-col px-5"
       style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: bottomBarClearance(1) }}
     >
       {/* v3 §3: 화면에 보이는 큰 제목은 라벨과 중복이라 지웠다. sr-only h1은 남긴다 —
@@ -44,7 +44,7 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
           <label htmlFor={inputId} className="text-center text-entry-label text-ink">
             {pick(mode, tableNumberLabel.ko, tableNumberLabel.en)}
           </label>
-          <p className="mt-1 text-center text-caption text-ink-sub">
+          <p className="mt-1 text-center text-caption text-ink-sub-bg">
             {pick(mode, tableNumberPlaceholder.ko, tableNumberPlaceholder.en)}
           </p>
           <div className="mt-5 w-full">
@@ -56,6 +56,7 @@ export function TableEntry({ onJoin }: { onJoin: (table: number) => void }) {
                 setError(false);
               }}
               error={error}
+              onBackground
               ariaLabel={pick(mode, tableNumberLabel.ko, tableNumberLabel.en)}
               ariaDescribedBy={error ? errorId : undefined}
             />

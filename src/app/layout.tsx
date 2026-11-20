@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // <meta name="theme-color"> needs a literal value (can't reference a CSS custom property) — keep in sync with --color-canvas in globals.css
-  themeColor: "#fafaf9",
+  // <meta name="theme-color"> needs a literal value (can't reference a CSS custom property) — keep in sync with --color-backdrop in globals.css
+  themeColor: "#fbf9f7",
   viewportFit: "cover",
   width: "device-width",
   initialScale: 1,
@@ -27,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: introSkipScript }} />
       </head>
       <body className="min-h-full">
+        <div aria-hidden className="app-bg" />
         <ConvexClientProvider>{children}</ConvexClientProvider>
       </body>
     </html>
