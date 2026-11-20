@@ -4,7 +4,7 @@ import { forwardRef, type ReactNode } from "react";
 import { motion } from "motion/react";
 
 export type ButtonSize = "lg" | "md" | "sm";
-export type ButtonVariant = "fill" | "weak" | "outline";
+export type ButtonVariant = "fill" | "weak" | "outline" | "danger";
 
 // v3: 세 크기 전부 radius 8px(--radius-btn) 공유, 폭은 전부 내용+패딩(auto) — 전폭 버튼 금지.
 const SIZE: Record<ButtonSize, { height: string; paddingX: string; textClass: string }> = {
@@ -38,6 +38,14 @@ const VARIANT: Record<
     background: "transparent",
     color: "var(--color-ink)",
     border: "1px solid var(--color-line-strong)",
+    pressedOverlay: "black",
+    pressedOpacity: 0.12,
+  },
+  // 16: 관리자 페이지의 "전체 테이블 초기화" 전용. 채움이 아니라 투명 + danger 글자/테두리(채움 금지).
+  danger: {
+    background: "transparent",
+    color: "var(--color-danger)",
+    border: "1px solid var(--color-danger)",
     pressedOverlay: "black",
     pressedOpacity: 0.12,
   },
