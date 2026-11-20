@@ -10,6 +10,9 @@
 
 import type * as admin from "../admin.js";
 import type * as lib_cards from "../lib/cards.js";
+import type * as lib_config from "../lib/config.js";
+import type * as lib_resets from "../lib/resets.js";
+import type * as resets from "../resets.js";
 import type * as tables from "../tables.js";
 
 import type {
@@ -21,6 +24,9 @@ import type {
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   "lib/cards": typeof lib_cards;
+  "lib/config": typeof lib_config;
+  "lib/resets": typeof lib_resets;
+  resets: typeof resets;
   tables: typeof tables;
 }>;
 

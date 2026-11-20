@@ -161,7 +161,7 @@ describe("admin — 비밀번호 미설정", () => {
   it("ADMIN_PASSCODE가 없으면 not_configured", async () => {
     const test = t();
     await test.mutation(anyApi.tables.seed, {});
-    const result = await test.mutation(anyApi.admin.resetTable, { table: 1, passcode: "whatever" });
+    const result = await test.mutation(anyApi.admin.resetTable, { tableNo: 1, passcode: "whatever" });
     expect(result.status).toBe("not_configured");
   });
 });
