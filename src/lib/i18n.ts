@@ -13,6 +13,9 @@ export function pick(mode: LanguageMode, ko: string, en: string): string {
   return `${ko} · ${en}`;
 }
 
+/** 17: 사용된 카드를 다시 볼 때 열린 카드 아래쪽에 붙는 작은 표시 — 공유 카드가 아니라 이 폰에서만 보는 것임을 알린다. */
+export const reviewBadge = { ko: "다시 보기", en: "Review" };
+
 export function sourceLabel(mode: LanguageMode, category: { ko: string; en: string }): string {
   return pick(mode, category.ko, category.en);
 }
@@ -68,8 +71,9 @@ export const cardBack = {
     en: `Card ${n}, ${category.en}`,
   }),
   used: (n: string, category: { ko: string; en: string }) => ({
-    ko: `${n}번 카드, ${category.ko} (사용함)`,
-    en: `Card ${n}, ${category.en} (used)`,
+    // 17: 사용된 카드도 눌러서 다시 볼 수 있다(보기 전용, 이 폰에서만)
+    ko: `${n}번 카드, ${category.ko}, 사용함. 눌러서 다시 보기`,
+    en: `Card ${n}, ${category.en}, used. Tap to review`,
   }),
 };
 

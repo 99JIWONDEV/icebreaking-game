@@ -16,12 +16,14 @@ export function SequentialGrid({
   highlightedCardId,
   openCardId,
   onOpenCard,
+  onReviewCard,
 }: {
   usedIds: string[];
   gridDisabled: boolean;
   highlightedCardId: string | null;
   openCardId: string | null;
   onOpenCard: (question: Question) => void;
+  onReviewCard: (question: Question) => void;
 }) {
   const mode = useViewStore((state) => state.mode);
   const sections = categorySections();
@@ -51,6 +53,7 @@ export function SequentialGrid({
               highlightedCardId={highlightedCardId}
               openCardId={openCardId}
               onOpenCard={onOpenCard}
+              onReviewCard={onReviewCard}
               columns={4}
               gap="var(--size-grid-gap-all)"
               compact

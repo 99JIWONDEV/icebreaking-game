@@ -157,6 +157,24 @@ describe("tables.reshuffleCategory", () => {
   });
 });
 
+// 17: 사용된 카드 다시 보기는 클라이언트 로컬 상태라 서버 규칙은 그대로다 — 랜덤 뽑기가 사용된 카드를
+// 계속 제외하는지(서버 쪽 풀 계산)만 다시 확인한다.
+describe("drawRandom — 사용된 카드 제외 (17)", () => {
+  it("한 장만 남기고 전부 used면 항상 그 한 장만 뽑힌다", async () => {
+    const test = t();
+    await test.mutation(anyApi.tables.seed, {});
+    const remaining = questions[7].id;
+    await test.run(async (ctx) => {
+      const doc = await ctx.db.query("tables").withIndex("by_number", (q) => q.eq("number", 1)).unique();
+      if (!doc) throw new Error("missing table");
+      await ctx.db.patch(doc._id, { used: questions.map((q) => q.id).filter((id) => id !== remaining) });
+    });
+    const result = await test.mutation(anyApi.tables.drawRandom, { table: 1, epoch: 0, clientId: "client-1" });
+    expect(result.status).toBe("opened");
+    expect(result.state?.current?.cardId).toBe(remaining);
+  });
+});
+
 describe("admin — 비밀번호 미설정", () => {
   it("ADMIN_PASSCODE가 없으면 not_configured", async () => {
     const test = t();

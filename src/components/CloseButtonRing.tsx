@@ -15,15 +15,18 @@ export function CloseButtonRing({
   openedAt,
   ready,
   onClose,
+  instant = false,
 }: {
   openedAt: number;
   ready: boolean;
   onClose: () => void;
+  /** 17: 보기 전용(다시 보기)은 minOpenMs 게이트가 없어 링이 차오를 이유가 없다 — 처음부터 가득. */
+  instant?: boolean;
 }) {
   const mode = useViewStore((state) => state.mode);
   // CloseButtonRing remounts fresh for every new card (keyed by cardId in the parent),
   // so starting unfilled and animating to full is correct without reading Date.now() here.
-  const [filled, setFilled] = useState(false);
+  const [filled, setFilled] = useState(instant);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setFilled(true));
@@ -53,7 +56,7 @@ export function CloseButtonRing({
             strokeLinecap="round"
             strokeDasharray={CIRCUMFERENCE}
             strokeDashoffset={filled ? 0 : CIRCUMFERENCE}
-            style={{ transition: filled ? `stroke-dashoffset ${MIN_OPEN_MS}ms linear` : "none" }}
+            style={{ transition: filled && !instant ? `stroke-dashoffset ${MIN_OPEN_MS}ms linear` : "none" }}
           />
         </svg>
         {pick(mode, closeCard.ko, closeCard.en)}

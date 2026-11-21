@@ -35,6 +35,8 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   const [drawPending, setDrawPending] = useState(false);
   const [localOpenedAt, setLocalOpenedAt] = useState<number | null>(null);
   const [showLocalFallbackPrompt, setShowLocalFallbackPrompt] = useState(false);
+  // 17: 사용된 카드 다시 보기(보기 전용). 로컬 상태만 — 서버 호출/구독 상태와 무관하고 이 폰에서만 보인다.
+  const [reviewId, setReviewId] = useState<string | null>(null);
   const suspenseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const repoMode = useActiveMode();
@@ -72,6 +74,9 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
   // state는 구독 콜백이 새 값을 줄 때만 바뀌므로, useEffect 대신 렌더 중 비교로 처리한다
   // (React 문서의 "prop이 바뀔 때 state를 조정" 패턴 — 불필요한 effect 왕복을 피한다).
   const currCardId = state?.current?.cardId ?? null;
+  // 17: 공유 카드(서버 current)가 우선한다 — 누군가 새 카드를 열면 이 폰의 로컬 보기는 닫힌다.
+  // 같은 렌더 중 비교 패턴이라 한 프레임도 두 오버레이가 같이 마운트되지 않는다.
+  if (currCardId !== null && reviewId !== null) setReviewId(null);
   if (state && currCardId !== prevCardId) {
     const isFirstState = prevCardId === undefined;
     setPrevCardId(currCardId);
@@ -153,6 +158,15 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
 
   const openQuestion = state.current && !suspenseTargetId ? questionById(state.current.cardId) : null;
   const gridDisabled = !!state.current || connection !== "connected";
+  // 17: 공유 카드가 있으면(state.current) 그게 우선 — 로컬 보기는 그 사이에 없다.
+  const reviewQuestion = !state.current && !suspenseTargetId && reviewId ? questionById(reviewId) : null;
+  const overlayCardId = state.current?.cardId ?? reviewQuestion?.id ?? null;
+
+  function handleReviewCard(question: { id: string }) {
+    // 보기 전용: repository/mutation을 부르지 않는다. 공유 카드가 열려 있거나 랜덤 서스펜스 중엔 무시.
+    if (state?.current || suspenseTargetId) return;
+    setReviewId(question.id);
+  }
 
   async function handleOpenCard(question: { id: string }) {
     await drawCard(question.id);
@@ -205,7 +219,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
           </Button>
         </div>
       )}
-      <div inert={!!state.current} className="flex flex-1 flex-col">
+      <div inert={!!state.current || !!reviewQuestion} className="flex flex-1 flex-col">
         <div style={{ paddingTop: "env(safe-area-inset-top)" }}>
           <TopBar tableNumber={tableNumber} connection={connection} onOpenMenu={() => setMenuOpen(true)} />
         </div>
@@ -223,8 +237,9 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
               usedIds={usedIds}
               gridDisabled={gridDisabled}
               highlightedCardId={highlightedCardId}
-              openCardId={suspenseTargetId ? null : state.current?.cardId ?? null}
+              openCardId={suspenseTargetId ? null : overlayCardId}
               onOpenCard={handleOpenCard}
+              onReviewCard={handleReviewCard}
             />
           ) : (
             <CardGrid
@@ -233,8 +248,9 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
               usedIds={usedIds}
               gridDisabled={gridDisabled}
               highlightedCardId={highlightedCardId}
-              openCardId={suspenseTargetId ? null : state.current?.cardId ?? null}
+              openCardId={suspenseTargetId ? null : overlayCardId}
               onOpenCard={handleOpenCard}
+              onReviewCard={handleReviewCard}
             />
           )}
           {/* 격자의 기존 paddingBottom(bottomBarClearance) 안쪽에 둬서, 스크롤 끝까지
@@ -243,7 +259,7 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
           <Footer />
         </div>
 
-        <BottomBar hidden={!!state.current}>
+        <BottomBar hidden={!!state.current || !!reviewQuestion}>
           {categoryExhaustedNow ? (
             <>
               <p className="text-center text-body text-ink-sub">
@@ -261,8 +277,10 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
         </BottomBar>
       </div>
 
-      <AnimatePresence>
-        {openQuestion && state.current && (
+      {/* 17: 오버레이 슬롯은 하나뿐이다 — 공유 카드(state.current)와 로컬 보기는 같은 AnimatePresence의
+          자식이라 mode="wait"로 하나가 완전히 사라진 뒤에 다음이 뜬다(동시에 두 개 안 보인다). */}
+      <AnimatePresence mode="wait">
+        {openQuestion && state.current ? (
           <OpenCardOverlay
             key={state.current.cardId}
             question={openQuestion}
@@ -270,7 +288,16 @@ export function MainScreen({ tableNumber, onChangeTable }: { tableNumber: number
             animate={animatedCardId === state.current.cardId}
             onClose={handleClose}
           />
-        )}
+        ) : reviewQuestion ? (
+          <OpenCardOverlay
+            key={`review-${reviewQuestion.id}`}
+            question={reviewQuestion}
+            openedAt={0}
+            animate
+            review
+            onClose={() => setReviewId(null)}
+          />
+        ) : null}
       </AnimatePresence>
 
       <MenuDrawer

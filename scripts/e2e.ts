@@ -10,6 +10,8 @@
 // plain `playwright` 패키지만 설치돼 있어(`@playwright/test` 아님) test()/expect() 러너가
 // 없다 — Locator API(자동 대기 포함)는 그대로 쓰되, 체크는 직접 만든 check()로 기록한다.
 import { chromium, type Browser, type BrowserContext, type Page, type WebSocketRoute } from "playwright";
+// 17: 사용된 카드도 이제 눌린다(다시 보기) — aria-disabled가 더는 "사용됨"을 뜻하지 않으니 라벨로 미사용 카드를 고른다.
+const UNUSED_CARD = 'button[data-card-id]:not([aria-label*="사용함"]):not([aria-label*=", used"])';
 
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3737";
 const TABLE = Number(process.env.E2E_TABLE ?? 2); // concurrency.ts(20), load.ts(6~20)와 안 겹치는 테이블
@@ -49,7 +51,7 @@ function openCardDialog(page: Page) {
 }
 
 function anyOpenCardButton(page: Page) {
-  return page.locator('button[data-card-id]:not([aria-disabled="true"])').first();
+  return page.locator(UNUSED_CARD).first();
 }
 
 async function closeOpenCardIfAny(page: Page) {

@@ -8,6 +8,8 @@
 // 실행: node scripts/flip-visibility-regression.ts (next dev 떠 있어야 함, ?local=1만 써서
 // Convex 연결 불필요)
 import { chromium, webkit, type Browser, type Page } from "playwright";
+// 17: 사용된 카드도 이제 눌린다(다시 보기) — aria-disabled가 더는 "사용됨"을 뜻하지 않으니 라벨로 미사용 카드를 고른다.
+const UNUSED_CARD = 'button[data-card-id]:not([aria-label*="사용함"]):not([aria-label*=", used"])';
 
 const BASE_URL = process.env.FLIP_BASE_URL ?? "http://localhost:3737";
 const NEUTRALIZE_CSS = `
@@ -101,7 +103,7 @@ async function openAndSample(page: Page, table: number) {
   await page.locator("input[inputmode=numeric]").first().fill(String(table));
   await page.getByRole("button", { name: /입장하기|Join/ }).click();
   await page.waitForTimeout(1000);
-  await page.locator('button[data-card-id]:not([aria-disabled="true"])').first().click();
+  await page.locator(UNUSED_CARD).first().click();
   // cardFlipTransition: delay 250ms + duration 600ms = 850ms 완료 — 여유를 두고 1000ms 샘플.
   const openSamples = await sampleDuring(page, 1000, 20);
 

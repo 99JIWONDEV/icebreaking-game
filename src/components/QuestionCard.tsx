@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { cardShapeStyle } from "@/lib/cardStyle";
-import { sourceLabel } from "@/lib/i18n";
+import { reviewBadge, pick, sourceLabel } from "@/lib/i18n";
 import { textRevealStaggerMs } from "@/lib/motion";
 import { categoryOf, questionIndex, questions, type Question } from "@/lib/questions";
 import { useReducedMotion } from "@/lib/useReducedMotion";
@@ -11,10 +11,13 @@ import { useViewStore } from "@/store/useViewStore";
 export function QuestionCard({
   question,
   revealed = true,
+  review = false,
 }: {
   question: Question;
   /** false = ko/en text starts hidden, then fades/rises in staggered (used by OpenCardOverlay phase ⑤). */
   revealed?: boolean;
+  /** 17: 사용된 카드 다시 보기 — 아래쪽에 작은 표시를 붙인다(흐름 밖 absolute라 레이아웃이 안 흔들린다). */
+  review?: boolean;
 }) {
   const mode = useViewStore((state) => state.mode);
   const reduced = useReducedMotion();
@@ -75,6 +78,12 @@ export function QuestionCard({
           </motion.p>
         )}
       </div>
+
+      {review && (
+        <span className="absolute bottom-7 left-7 right-7 text-label text-ink-sub">
+          {pick(mode, reviewBadge.ko, reviewBadge.en)}
+        </span>
+      )}
     </div>
   );
 }

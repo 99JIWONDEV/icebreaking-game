@@ -26,12 +26,15 @@ export function OpenCardOverlay({
   openedAt,
   animate,
   onClose,
+  review = false,
 }: {
   question: Question;
   openedAt: number;
   /** false for a card that was already open when this device connected — spec §5-1 재접속 규칙 */
   animate: boolean;
   onClose: () => void;
+  /** 17: 사용된 카드 다시 보기(보기 전용) — 서버 상태와 무관한 로컬 오버레이. 뒤집기 연출은 같다. */
+  review?: boolean;
 }) {
   const reduced = useReducedMotion();
   const playIntro = animate && !reduced;
@@ -149,7 +152,7 @@ export function OpenCardOverlay({
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 24px)" }}
       >
         <h2 id={titleId} ref={titleRef} tabIndex={-1} className="sr-only">
-          카드 {number}번
+          카드 {number}번{review ? " 다시 보기" : ""}
         </h2>
         <div className="flex w-full flex-1 items-center justify-center">
           <motion.div
@@ -221,7 +224,7 @@ export function OpenCardOverlay({
                 }}
                 variants={toggles.flipFade ? frontFadeVariants : undefined}
               >
-                <CardBackFace question={question} used={false} />
+                <CardBackFace question={question} used={review} />
               </motion.div>
               <motion.div
                 className="absolute inset-0"
@@ -243,7 +246,7 @@ export function OpenCardOverlay({
                     래퍼로 옮겼다 — preserve-3d의 직계 자식(바로 위 면)에 그룹화 속성이
                     끼지 않게 하는 예방 조치(13번에서 확인한 isolation 문제와 같은 종류). */}
                 <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: "var(--radius-card)" }}>
-                  <QuestionCard question={question} revealed={textRevealed} />
+                  <QuestionCard question={question} revealed={textRevealed} review={review} />
                   {/* 07 §1, 07 후속(단순화): /dev?shine=v1|v4(기본 꺼짐, 14 §B)로 전환 —
                       v1은 Step 1/2 원본 기하 복원, v4는 왼쪽 위→오른쪽 아래 대각선 한 번
                       (와이프+띠, 같은 타이밍 공유) + 글로우(같은 타이밍). 끝나면 DOM에서
@@ -258,7 +261,7 @@ export function OpenCardOverlay({
         </div>
 
         <div className="w-full" style={{ maxWidth: "var(--size-card-max)" }}>
-          <CloseButtonRing openedAt={openedAt} ready={ready} onClose={onClose} />
+          <CloseButtonRing openedAt={openedAt} ready={ready} onClose={onClose} instant={review} />
         </div>
       </div>
     </>

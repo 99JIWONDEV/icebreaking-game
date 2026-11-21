@@ -12,6 +12,8 @@
 // 실행: node scripts/toggle-regression.ts (next dev 떠 있어야 함, ?local=1만 써서
 // Convex 연결 불필요)
 import { chromium, webkit, type Browser } from "playwright";
+// 17: 사용된 카드도 이제 눌린다(다시 보기) — aria-disabled가 더는 "사용됨"을 뜻하지 않으니 라벨로 미사용 카드를 고른다.
+const UNUSED_CARD = 'button[data-card-id]:not([aria-label*="사용함"]):not([aria-label*=", used"])';
 
 const BASE_URL = process.env.TOGGLE_BASE_URL ?? "http://localhost:3737";
 const QUESTION_1_KO = "오늘 하루를 한 단어로 표현한다면 뭐가 될까요?";
@@ -74,7 +76,7 @@ async function runEngine(browser: Browser, engineLabel: string) {
     await page.getByRole("button", { name: /입장하기|Join/ }).click();
     await page.waitForTimeout(1000);
     // 카드 01 — 격자는 항상 번호 순서라 .first()가 01이다(시드 셔플 없음, v3 §4-1).
-    await page.locator('button[data-card-id]:not([aria-disabled="true"])').first().click();
+    await page.locator(UNUSED_CARD).first().click();
     await page.waitForTimeout(2500);
 
     const textVisible = await page

@@ -18,6 +18,7 @@ export function CardGrid({
   highlightedCardId,
   openCardId,
   onOpenCard,
+  onReviewCard,
   columns = 3,
   gap = "var(--size-grid-gap)",
   compact = false,
@@ -30,6 +31,8 @@ export function CardGrid({
    *  empty placeholder so the two don't fight over the same layoutId at once. */
   openCardId: string | null;
   onOpenCard: (question: Question) => void;
+  /** 17: 사용된 카드를 누르면 질문을 다시 본다(보기 전용 — 서버 호출 없음). 연결 상태와 무관하게 눌린다. */
+  onReviewCard: (question: Question) => void;
   columns?: number;
   gap?: string;
   /** 4열 "전체" 보기 구간처럼 카드가 작을 때 — CardBackFace의 No. 라벨을 숨긴다(변형 A) */
@@ -62,9 +65,11 @@ export function CardGrid({
             <CardBack
               question={question}
               used={used}
-              interactive={!used && !gridDisabled}
+              // 17: 사용된 카드는 연결이 끊겨도(gridDisabled) 눌려야 한다 — 로컬 상태만 쓴다.
+              // 공유 카드가 열려 있을 땐 격자 전체가 inert라 어차피 안 눌린다.
+              interactive={used || !gridDisabled}
               compact={compact}
-              onOpen={() => onOpenCard(question)}
+              onOpen={() => (used ? onReviewCard(question) : onOpenCard(question))}
             />
           </motion.div>
         );
